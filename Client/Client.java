@@ -1,33 +1,37 @@
-package Client;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Scanner;
- 
+
 public class Client {
-    @SuppressWarnings("resource")
-    public static void main(String[] args) throws UnknownHostException, IOException {
-        Socket sock = new Socket("localhost", 3456);
-        String FileName = "prueba.txt";
-        File MyFile = new File(FileName);
-        int FileSize = (int) MyFile.length();
-        OutputStream os =sock.getOutputStream();
-        PrintWriter pr = new PrintWriter(sock.getOutputStream(), true);
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(MyFile));
-        Scanner in = new Scanner(sock.getInputStream());
-         
-        pr.println(FileName);
-        pr.println(FileSize);
-        byte[] filebyte = new byte[FileSize];
-        bis.read(filebyte, 0, filebyte.length);
-        os.write(filebyte, 0, filebyte.length);
-        System.out.println(in.nextLine());
-        os.flush();
-        sock.close();
+    private static DataOutputStream dataOutputStream = null;
+    private static DataInputStream dataInputStream = null;
+
+    public static void main(String[] args) {
+        try(Socket socket = new Socket("localhost",5000)) {
+            dataInputStream = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
+
+            sendFile("../prueba.txt");
+            
+            dataInputStream.close();
+            dataOutputStream.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void sendFile(String path) throws Exception{
+        int bytes = 0;
+        File file = new File(path);
+        FileInputStream fileInputStream = new FileInputStream(file);
+        
+        // send file size
+        dataOutputStream.writeLong(file.length());  
+        // break file into chunks
+        byte[] buffer = new byte[4*1024];
+        while ((bytes=fileInputStream.read(buffer))!=-1){
+            dataOutputStream.write(buffer,0,bytes);
+            dataOutputStream.flush();
+        }
+        fileInputStream.close();
     }
 }
