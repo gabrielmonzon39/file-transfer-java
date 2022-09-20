@@ -16,7 +16,7 @@ public class Server {
             dataInputStream = new DataInputStream(clientSocket.getInputStream());
             dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
 
-            receiveFile("h.txt");
+            receiveFile();
 
             dataInputStream.close();
             dataOutputStream.close();
@@ -26,9 +26,14 @@ public class Server {
         }
     }
 
-    private static void receiveFile(String fileName) throws Exception{
+    private static void receiveFile() throws Exception{
         int bytes = 0;
-        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+
+        // read file name
+        String name = dataInputStream.readUTF();
+        System.out.println("name: "+name); 
+
+        FileOutputStream fileOutputStream = new FileOutputStream(name);
         
         long size = dataInputStream.readLong();     // read file size
         byte[] buffer = new byte[4*1024];

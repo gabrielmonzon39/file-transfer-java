@@ -1,7 +1,0 @@
-hola
-prueba
-linea 3
-
-
-
-fin del archivo

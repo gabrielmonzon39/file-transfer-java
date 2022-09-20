@@ -24,8 +24,14 @@ public class Client {
         File file = new File(path);
         FileInputStream fileInputStream = new FileInputStream(file);
         
+        // send file name
+        System.out.println("path: "+path);
+        System.out.println("name: "+file.getName());
+        dataOutputStream.writeUTF(file.getName());
+        dataOutputStream.flush();
+
         // send file size
-        dataOutputStream.writeLong(file.length());  
+        dataOutputStream.writeLong(file.length());
         // break file into chunks
         byte[] buffer = new byte[4*1024];
         while ((bytes=fileInputStream.read(buffer))!=-1){
