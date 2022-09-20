@@ -1,0 +1,7 @@
+esta es una prueba
+hola
+linea 3
+linea 4
+
+
+Fin del archivo
