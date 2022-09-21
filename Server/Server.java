@@ -16,7 +16,9 @@ public class Server {
             Socket clientSocket = serverSocket.accept();
             dataInputStream = new DataInputStream(clientSocket.getInputStream());
             dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+           while(true){ 
             receiveData();
+           }
             dataInputStream.close();
             dataOutputStream.close();
             clientSocket.close();
