@@ -7,17 +7,16 @@ import java.net.Socket;
 public class Server {
     private static DataOutputStream dataOutputStream = null;
     private static DataInputStream dataInputStream = null;
+    private static FileOutputStream fileOutputStream;
+    private static byte[][] chunks;
+    private static long size;
 
     public static void main(String[] args) {
         try(ServerSocket serverSocket = new ServerSocket(5000)){
-            System.out.println("listening to port:5000");
             Socket clientSocket = serverSocket.accept();
-            System.out.println(clientSocket+" connected.");
             dataInputStream = new DataInputStream(clientSocket.getInputStream());
             dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
-
-            receiveFile();
-
+            receiveData();
             dataInputStream.close();
             dataOutputStream.close();
             clientSocket.close();
@@ -26,21 +25,39 @@ public class Server {
         }
     }
 
-    private static void receiveFile() throws Exception{
-        int bytes = 0;
-
+    private static void receiveData() throws Exception{
         // read file name
         String name = dataInputStream.readUTF();
-        System.out.println("name: "+name); 
+        fileOutputStream = new FileOutputStream(name);
 
-        FileOutputStream fileOutputStream = new FileOutputStream(name);
-        
-        long size = dataInputStream.readLong();     // read file size
-        byte[] buffer = new byte[4*1024];
-        while (size > 0 && (bytes = dataInputStream.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
-            fileOutputStream.write(buffer,0,bytes);
-            size -= bytes;      // read upto file size
+        // read file size
+        size = dataInputStream.readLong();   
+        long noChunks = (size%((long)516)==0L) ? size/((long)516) : size/((long)516)+1;
+        chunks = new byte[(int)noChunks][516];
+
+        // read file chunks
+        int bytes = 0;
+        int i = 0;
+        byte[] buffer = new byte[516];
+
+
+        for (int l = 0; (float)l < (float)((int)noChunks/2); l++) {
+            bytes = dataInputStream.read(buffer);
+            chunks[l] = buffer.clone();
+            bytes = dataInputStream.read(buffer);
+            chunks[chunks.length-1-l] = buffer.clone(); 
+            size -= bytes;    
         }
+        
+        // write the result to the file
+        for (int j = 0; j < chunks.length; j++) {
+            for (int k = 0; k < chunks[j].length; k++) {
+                if (k <= 3) continue;
+                if (chunks[j][k] != 0)
+                    fileOutputStream.write(chunks[j][k]);
+            }
+        }
+
         fileOutputStream.close();
     }
 }
