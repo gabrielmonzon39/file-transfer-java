@@ -1,6 +1,8 @@
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -12,16 +14,27 @@ public class Server {
     private static long size;
 
     public static void main(String[] args) {
+      // get input from user terminal using system.in
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+      String input = "";
+      
         try(ServerSocket serverSocket = new ServerSocket(5000)){
-            Socket clientSocket = serverSocket.accept();
-            dataInputStream = new DataInputStream(clientSocket.getInputStream());
-            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
-           while(true){ 
-            receiveData();
-           }
-            dataInputStream.close();
-            dataOutputStream.close();
-            clientSocket.close();
+            while(!input.equals("exit")){
+              System.out.println("Esperando Conexion...");
+              Socket clientSocket = serverSocket.accept();
+              dataInputStream = new DataInputStream(clientSocket.getInputStream());
+              dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+
+              System.out.println("Esperando Archivo...");
+              receiveData();
+              System.out.println("Archivo Recibido");
+
+              System.out.println("Presione Enter para continuar o escriba 'exit' para salir");
+              input = bufferedReader.readLine();
+              dataInputStream.close();
+              dataOutputStream.close();
+              clientSocket.close();
+            }
         } catch (Exception e){
             e.printStackTrace();
         }
