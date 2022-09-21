@@ -8,14 +8,22 @@ public class Client {
     private static byte[][] chunks;
     private static long size;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        Scanner sc= new Scanner(System.in);    //System.in is a standard input stream  
-        System.out.print("Ingrese el nombre del archivo:  "); 
-        String str= sc.nextLine(); 
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+      System.out.println("Ingresar la ip del servidor: ");
+      String ip = bufferedReader.readLine();
+
+      System.out.println("Ingresar el puerto del servidor: ");
+      int port = Integer.parseInt(bufferedReader.readLine());
+
+      Scanner sc= new Scanner(System.in);    //System.in is a standard input stream  
+      System.out.print("Ingrese el nombre del archivo:  "); 
+      String str= sc.nextLine();
 
 
-        try(Socket socket = new Socket("localhost",5000)) {
+
+        try(Socket socket = new Socket(ip, port)) {
             dataInputStream = new DataInputStream(socket.getInputStream());
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
