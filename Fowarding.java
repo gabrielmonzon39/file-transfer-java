@@ -3,8 +3,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Fowarding extends Thread{
-    private static final String IP = "127.0.0.1";
-    private static final int PORT_FORWARDING = 9081;
+    //private static final String IP = "127.0.0.1";
+    //private static final int PORT_FORWARDING = 9081;
     private static DataOutputStream dataOutputStream = null;
     private static DataInputStream dataInputStream = null;
     private static DataOutputStream dataOutputStream2 = null;

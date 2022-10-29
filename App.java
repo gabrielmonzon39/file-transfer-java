@@ -6,9 +6,9 @@ import java.util.Random;
 public class App {
 
     private static final String PATH = "./Send/";
-    private static final String IP = "127.0.0.1";
-    private static final int PORT_FORWARDING = 9081;
-    private static final int PORT_SENDER = 7777;
+    //private static final String IP = "127.0.0.1";
+    //private static final int PORT_FORWARDING = 9081;
+    //private static final int PORT_SENDER = 7777;
     private static final int PORT_RECEIVER = 6666;
     private static final int CHUNKSIZE = 1460;
     private static final int REQUESTFIELDQUANTITY = 4;
@@ -17,7 +17,7 @@ public class App {
     private static FileOutputStream fileOutputStream;
 
     private static byte[][] chunks;
-    private static long size;
+    //private static long size;
 
     public static void clientConnection () {
 
@@ -30,7 +30,7 @@ public class App {
               dataInputStream = new DataInputStream(clientSocket.getInputStream());
               dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
               String[] params = decodeRequest();
-              String response = makeResponse(params);
+              makeResponse(params);
               //System.out.println(response);
               dataInputStream.close();
               dataOutputStream.close();
@@ -56,7 +56,7 @@ public class App {
         String to = params[1];
         String name = params[2];
         int size = Integer.parseInt(params[3]);
-        byte[] result;
+        //byte[] result;
 
         long noChunks = (size%((long)CHUNKSIZE)==0L) ? size/((long)CHUNKSIZE) : size/((long)CHUNKSIZE)+1;
         chunks = new byte[(int)noChunks][CHUNKSIZE];
