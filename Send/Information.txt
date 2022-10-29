@@ -1,0 +1,5 @@
+Arcane.jpg 154989
+Z1.jpg 10243
+Z2.jpg 7135
+Z3.jpg 9032
+test.txt 2022

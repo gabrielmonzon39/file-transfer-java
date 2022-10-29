@@ -1,3 +1,2 @@
-myserver.java
-prueba.java
-Messages.java
+*.class
+Test.java
