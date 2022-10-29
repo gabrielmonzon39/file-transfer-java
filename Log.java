@@ -31,7 +31,7 @@ public class Log {
     public static String message (String from, String to, String file, int size, int chunk, boolean action) {
         return begin() + Time.now() + "\tDe: " + from + "   Para: " + to + "\n" + 
         "Archivo: " + file + "\n" +
-        "Tamaño: " + size + "bytes\n" + 
+        "Tamaño: " + size + " bytes\n" + 
         "Chunk " + ((action) ? "recibido" : "enviado") + ": " + (chunk+1) + "\n" + end();
     }
  

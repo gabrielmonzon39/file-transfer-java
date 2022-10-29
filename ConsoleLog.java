@@ -7,7 +7,7 @@ public class ConsoleLog {
         printBegin();
         System.out.println(Time.now() + "\tDe: " + from + "   Para: " + to);
         System.out.println("Archivo: " + file);
-        System.out.println("Tamaño: " + size + "bytes");
+        System.out.println("Tamaño: " + size + " bytes");
         System.out.println("Chunk " + ((action) ? "recibido" : "enviado") + ": " + (chunk+1));
         printEnd();
     }
