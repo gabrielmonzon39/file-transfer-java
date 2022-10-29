@@ -6,12 +6,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Information {
     ConcurrentLinkedQueue<FileData> files;
-    private static final String PATH = "./Received/Information.txt";
+    private static final String INFOTXT = "./Received/Information.txt";
+    private static final String PATH = "./Received/";
 
     public Information () {
         files = new ConcurrentLinkedQueue<>();
         try {  
-            FileInputStream fis = new FileInputStream(PATH);       
+            FileInputStream fis = new FileInputStream(INFOTXT);       
             Scanner scanLine = new Scanner(fis);
             String[] fileData;
             while (scanLine.hasNextLine()) {  
@@ -30,14 +31,17 @@ public class Information {
 
     public FileData getFile () {
         FileData fileData;
-        do {
+        while (hasRemainingFiles()) {
             fileData = files.poll();
-        } while (isAlready(fileData));
-        return fileData;
+            if (!isAlready(fileData)) {
+                return fileData;
+            }
+        }
+        return null;
     }
 
     public boolean isAlready(FileData fileData) {
-        File file = new File(fileData.fileName);
+        File file = new File(PATH+(fileData.fileName));
         return file.exists();
     }
 }

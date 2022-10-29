@@ -135,6 +135,8 @@ public class Receiver {
         while (filesInfo.hasRemainingFiles()) {
             FileData file = filesInfo.getFile();
 
+            if (file == null) break;
+
             try(Socket socket = new Socket(IP, PORT_RECEIVER)) {
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
