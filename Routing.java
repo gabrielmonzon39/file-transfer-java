@@ -6,7 +6,7 @@ import java.util.*;
 import java.io.*;
 public class Routing {
   public static void main(String[] args) throws Exception {
-    BufferedReader br = new BufferedReader(new FileReader("pruba.txt"));
+    BufferedReader br = new BufferedReader(new FileReader("config.txt"));
     String line = null;
     HashMap<String, Costo> Dv = new HashMap<String, Costo>();
     
