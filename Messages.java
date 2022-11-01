@@ -38,22 +38,21 @@ public class Messages {
     }
 
     public static String ResponseInitialMessage(String from) {
-        return "From: " + from + "\n" + 
-               "Type: WELCOME";
+        return "From:" + from + "\n" + 
+               "Type:WELCOME";
     }
 
     public static String makeKeepAlive(String from) {
-        return "From: " + from + "\n" + 
-               "Type: KeepAlive";
+        return "From:" + from + "\n" + 
+               "Type:KeepAlive";
     }
 
-    public static String makeKevin(String from, HashMap<String, Costo> Dv) {
-        String ret = "";
-        ret += from + ";";
+    public static String makeDvSend(String from, HashMap<String, Costo> Dv) {
+        String ret = "From:" + from + "\n" + "Type:DV\n" + "Len:" + Dv.size() + "\n";
         for (Map.Entry<String, Costo> set : Dv.entrySet()) {
-            ret += " " + set.getKey() + ": " + set.getValue().costo + ",";
+            ret += set.getKey() + ":" + set.getValue().costo + "\n";
         }
-        return ret.substring(0, ret.length()-1);
+        return ret;
     }
     
 }
