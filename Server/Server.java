@@ -52,7 +52,6 @@ public class Server {
 
         // read file chunks
         int bytes = 0;
-        int i = 0;
         byte[] buffer = new byte[516];
 
 
