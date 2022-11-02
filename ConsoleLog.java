@@ -3,6 +3,13 @@ public class ConsoleLog {
     public static final boolean RECEIVED = true;
     public static final boolean SENT = false;
 
+    public static void printRoutingMessage (String from) {
+        printBegin();
+        System.out.println(Time.now() + "\tDe: " + from);
+        System.out.println("Mensaje \"Hello\" recibido.");
+        printEnd();
+    }
+
     public static void printMessage (String from, String to, String file, int size, int chunk, boolean action) {
         printBegin();
         System.out.println(Time.now() + "\tDe: " + from + "   Para: " + to);

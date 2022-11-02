@@ -84,7 +84,7 @@ public class Routing {
             DpReceive = new DatagramPacket(receive, receive.length);
             dr.receive(DpReceive);
             String data = data(receive).toString();
-            System.out.println(data);
+            //System.out.println(data);
 
             if (data.toLowerCase().contains("hello")) {
                 sendWelcome(ds, data, myHost);
@@ -208,6 +208,11 @@ public class Routing {
 
     static void sendWelcome(DatagramSocket ds, String data, Hosts host)  {
         String Ip = data.split("\n")[0].split(":")[1].trim();
+        
+        // LOG
+        ConsoleLog.printRoutingMessage(Ip);
+        Log.makeLogRouting(Ip);
+
         byte buf[] = Messages.ResponseInitialMessage(host.getMyAddress()).getBytes();
         try {
             //InetAddress ip = InetAddress.getLocalHost();
