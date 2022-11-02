@@ -33,8 +33,8 @@ public class Messages {
     }
 
     public static String makeInitialMessage(String from) {
-        return "From: " + from + "\n" + 
-               "Type: HELLO";
+        return "From:" + from + "\n" + 
+               "Type:HELLO";
     }
 
     public static String ResponseInitialMessage(String from) {

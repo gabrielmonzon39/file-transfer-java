@@ -6,15 +6,41 @@ import java.util.HashMap;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.*;  
 public class Routing {
 
+    static final int PORT = 9080;
+    static final int infinity = 99;
+
+    static final int defaultT = 5; // 30
+    static final int defaultU = 30; // 90
+    static int timerT = defaultT;
+    static int timerU = defaultU;
+
     static HashMap<String, Costo> DvReceived;
+    static HashMap<String, Costo> changed = new HashMap<>();
+    public static HashMap<String, Integer> timeRemaining = new HashMap<>();
+
+    public static ArrayList<String> vecinos = new ArrayList<>();
+
     static String from;
+
     public static void main(String[] args) throws Exception {
+        //***********    Leer tiempos T y U    ***********// 
+        try {
+            timerT = Integer.parseInt(args[0]);
+        } catch (Exception e) {}
+        try {
+            timerU = Integer.parseInt(args[1]);
+        } catch (Exception e) {}
+
+        //***********    Realizar inicializaciones    ***********// 
         BufferedReader br = new BufferedReader(new FileReader("config.txt"));
         String line = null;
         HashMap<String, Costo> Dv = new HashMap<String, Costo>();
+        FileWriter hostsWriter = new FileWriter("./hosts.txt", true);
+        hostsWriter.write("\n");
         
         //***********    Leer el archivo    ***********// 
         while ((line = br.readLine()) != null) {
@@ -22,9 +48,13 @@ public class Routing {
             for (String str : values) {
                 String[] dir = str.split(":");
                 Dv.put(dir[0].trim(),new Costo(Integer.parseInt(dir[1].trim()),dir[0].trim()));
+                vecinos.add(dir[0].trim());
+                timeRemaining.put(dir[0].trim(), timerU);
+                hostsWriter.write(dir[0].trim()+"\n");
             }
         }
         br.close();
+        hostsWriter.close();
 
         //***********    Leemos nuestra dirección    ***********// 
         Hosts myHost = new Hosts();
@@ -38,12 +68,14 @@ public class Routing {
         Set<String> keys = Dv.keySet();
         for (String key : keys) {
             send(ds, Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
+            sendHello(ds, key, myHost);
         }
 
         
         //***********    Crea sockets para recibir mensajes    ***********// 
-        DatagramSocket dr = new DatagramSocket(9080);
+        DatagramSocket dr = new DatagramSocket(PORT);
         byte[] receive = new byte[65535];
+        MyTimer.init(timerT, timerU);
         
         //***********    Esperamos las llamadas    ***********// 
         DatagramPacket DpReceive = null;
@@ -52,31 +84,59 @@ public class Routing {
             DpReceive = new DatagramPacket(receive, receive.length);
             dr.receive(DpReceive);
             String data = data(receive).toString();
-            decode(data);
+            System.out.println(data);
+
+            if (data.toLowerCase().contains("hello")) {
+                sendWelcome(ds, data, myHost);
+            } else {
+                decode(data);
+                resetTimeExceeded(from);
+            }
+
             //***********    Hacemos el algoritmo    ***********// 
+            if (DvReceived == null) continue;
             Set<String> receiveKeys = DvReceived.keySet();
             for (String key : receiveKeys) {
-                try {
-                    Dv.get(key);
-                } catch (Exception e) {
-                    Dv.put(key, DvReceived.get(key));
+                if (Dv.get(key) == null) {
+                    Dv.put(key, new Costo(Dv.get(from).costo + DvReceived.get(key).costo, from));
+                    changed.put(key, new Costo(Dv.get(from).costo + DvReceived.get(key).costo, from));
+                    hostsWriter = new FileWriter("./hosts.txt", true);
+                    hostsWriter.write(key+"\n");
+                    hostsWriter.close();
                     hasChange = true;
                     continue;
                 }
-                if (DvReceived.get(key).costo < Dv.get(key).costo) {
+                if (DvReceived.get(key).costo + Dv.get(from).costo < Dv.get(key).costo) {
                     hasChange = true;
-                    Dv.replace(key, new Costo(DvReceived.get(key).costo, from));
+                    Dv.replace(key, new Costo(DvReceived.get(key).costo + Dv.get(from).costo, from));
+                    changed.put(key, new Costo(DvReceived.get(key).costo + Dv.get(from).costo, from));
                 }
             }
+
+            //***********    Escribe en el archivo el nuevo vector    ***********// 
             if (hasChange) {
                 writeToFile(Dv);
-                Set<String> DvKeys = Dv.keySet();
-                for (String key : DvKeys) {
-                    send(ds, Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
-                }
                 hasChange = false;
             }
+            
         }
+    }
+
+    public static void resetTimeExceeded (String vecino) {
+        timeRemaining.replace(vecino, timerU);
+    }
+ 
+    public static void sendTimeoutMessage () throws SocketException {
+        DatagramSocket ds = new DatagramSocket();
+        Hosts myHost = new Hosts();
+        for (String vecino : vecinos) {
+            if (changed.size() == 0) {
+                send(ds, Messages.makeKeepAlive(myHost.getMyAddress()), vecino);
+            } else {
+                send(ds, Messages.makeDvSend(myHost.getMyAddress(), changed), vecino);
+            }
+        }  
+        changed = new HashMap<>();
     }
 
     public static void writeToFile (HashMap<String, Costo> Dv) {
@@ -127,7 +187,32 @@ public class Routing {
         try {
             //InetAddress ip = InetAddress.getLocalHost();
             InetAddress ip = InetAddress.getByName(Ip);
-            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 9080);
+            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 1234);
+            ds.send(DpSend);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    static void sendHello(DatagramSocket ds, String Ip, Hosts host)  {
+        byte buf[] = Messages.makeInitialMessage(host.getMyAddress()).getBytes();
+        try {
+            //InetAddress ip = InetAddress.getLocalHost();
+            InetAddress ip = InetAddress.getByName(Ip);
+            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 1234);
+            ds.send(DpSend);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    static void sendWelcome(DatagramSocket ds, String data, Hosts host)  {
+        String Ip = data.split("\n")[0].split(":")[1].trim();
+        byte buf[] = Messages.ResponseInitialMessage(host.getMyAddress()).getBytes();
+        try {
+            //InetAddress ip = InetAddress.getLocalHost();
+            InetAddress ip = InetAddress.getByName(Ip);
+            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 1234);
             ds.send(DpSend);
         } catch (Exception e){
             e.printStackTrace();
