@@ -58,9 +58,11 @@ public class Messages {
 }
 
 class Costo {
+    String ip;
     int costo;
     String link;
-    Costo (int costo, String link) {
+    Costo (String ip, int costo, String link) {
+        this.ip = ip;
         this.costo = costo;
         this.link = link;
     }

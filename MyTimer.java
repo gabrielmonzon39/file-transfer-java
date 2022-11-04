@@ -1,4 +1,3 @@
-import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Set;
@@ -46,7 +45,7 @@ class Helper extends TimerTask {
         for (String key : keys) {
             //System.out.println(key + " ---> " + Routing.timeRemaining.get(key));
             if (Routing.timeRemaining.get(key) == 0) {
-                changesToInfinity.put(key, new Costo(infinity, null));
+                changesToInfinity.put(key, new Costo(Routing.getIpFromLetter(key), infinity, null));
             }
         }
         if (changesToInfinity.size() != 0) {
@@ -59,12 +58,11 @@ class Helper extends TimerTask {
     }
 
     public void sendTimeExceededMessage (HashMap<String, Costo> changesToInfinity) throws SocketException {
-        DatagramSocket ds = new DatagramSocket();
         Hosts myHost = new Hosts();
         String vecino;
         for (int i = 0; i < Routing.vecinos.size(); i++) {
             vecino = Routing.vecinos.get(i); 
-            Routing.send(ds, Messages.makeDvSend(myHost.getMyAddress(), changesToInfinity), vecino);
+            Routing.send(Messages.makeDvSend(myHost.getMyAddress(), changesToInfinity), vecino);
         }
     }
 

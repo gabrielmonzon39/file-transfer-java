@@ -23,11 +23,11 @@ public class Hosts {
     }
 
     public String getMyAddress () {
-        return hosts.get(0);
+        return hosts.get(0).split("-")[0];
     }
 
     public String getRandomHost () {
         Random rand = new Random();
-        return hosts.get(rand.nextInt(hosts.size())+1);
+        return hosts.get(rand.nextInt(hosts.size())+1).split("-")[0];
     }
 }
