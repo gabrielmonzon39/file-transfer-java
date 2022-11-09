@@ -82,11 +82,13 @@ public class Routing extends Thread{
         DatagramSocket ds = new DatagramSocket();
 
         //***********    Mandamos la tabla    ***********// 
-        Set<String> keys = Dv.keySet();
+        /*Set<String> keys = Dv.keySet();
         for (String key : keys) {
             sendHello(key, myHost);
             send(Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
-        }
+        }*/
+        Routing routingTable = new Routing();
+        routingTable.run(null, false);
 
         
         //***********    Crea sockets para recibir mensajes    ***********//
@@ -103,11 +105,27 @@ public class Routing extends Thread{
         while (true) {
             Socket socket = serverSocket.accept();
             Routing routing = new Routing();
-            routing.run(socket);            
+            routing.run(socket, true);            
         }
     }
 
-    public void run (Socket socket) {
+
+    static boolean repeat = false;
+
+    public void run (Socket socket, boolean action) {
+        if (!action) {
+            //***********    Mandamos la tabla    ***********// 
+            Set<String> keys = Dv.keySet();
+            while (true) {
+                for (String key : keys) {
+                    sendHello(key, myHost);
+                    send(Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
+                }
+                if (!repeat) break;
+            }
+            return;
+        }
+
         DatagramPacket DpReceive = null;
         boolean hasChange = false;
         DataOutputStream dataOutputStream = null;
@@ -117,18 +135,28 @@ public class Routing extends Thread{
             String request = "";
 
             try {
-                char[] buffer = new char[1000];
                 dataInputStream  = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
                 request = dataInputStream.readUTF();
+                if (request == null || request.equals("")) {
+                    continue;
+                }
             } catch (IOException e1) {
+                //continue;
                 ConsoleLog.printError();
+                e1.printStackTrace();
             }
             
-            String data = data(request.getBytes()).toString();
-            
+            String data = request;
+
+            //System.out.println("**************************" + data + "**************************");
+
             if (data.toLowerCase().contains("hello")) {
                 sendWelcome(data, myHost);
+            } else if (data.toLowerCase().contains("keepalive") || data.toLowerCase().contains("welcome")) {
+                //System.out.println("ES UN KEEPALIVE O WELCOME");
+                from = data.split("\n")[0].split(":")[1];
+                resetTimeExceeded(from);
             } else {
                 decode(data);
                 resetTimeExceeded(from);
@@ -143,7 +171,7 @@ public class Routing extends Thread{
                     changed.put(key, new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
                     try {
                         hostsWriter = new FileWriter("./hosts.txt", true);
-                        hostsWriter.write(key+"\n");
+                        hostsWriter.write(key+"-"+Dv.get(from).ip+"\n");
                         hostsWriter.close();
                     } catch (IOException e) {
                         ConsoleLog.printError();
@@ -218,7 +246,9 @@ public class Routing extends Thread{
     }
 
     public static void decode (String data) {
+        //System.out.println("---------" + data + "---------");
         String[] dataDecoded = data.split("\n");
+        //System.out.println(dataDecoded[0]);
         from = dataDecoded[0].split(":")[1].trim();
         int size = Integer.parseInt(dataDecoded[2].split(":")[1].trim());
         DvReceived = new HashMap<>();
@@ -245,14 +275,14 @@ public class Routing extends Thread{
 
     static void send(String dv, String letter)  {
         String ip = getIpFromLetter(letter);
-        System.out.println("SEND TO -> " + letter + " (" + ip + ")");
+        System.out.println("SEND TO -> " + letter + " (" + ip + ")" + " ----->" + dv);
         try (Socket socket = new Socket(ip, PORT)) {
  
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
  
-            dataOutputStream.write(dv.getBytes());
-            dataOutputStream.flush();
+            dataOutputStream.writeUTF(dv);
+            //dataOutputStream.flush();
 
             //System.out.println(dv);
 
@@ -261,8 +291,10 @@ public class Routing extends Thread{
 
             socket.close();
         } catch (UnknownHostException ex) {
+            repeat = true;
             System.out.println("Server not found: " + ex.getMessage());
         } catch (IOException ex) {
+            repeat = true;
             System.out.println("I/O error: " + ex.getMessage());
         }
     }
