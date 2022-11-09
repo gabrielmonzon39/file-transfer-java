@@ -16,7 +16,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;  
-public class Routing extends Thread{
+public class Routing extends Thread {
 
     static final int PORT = 9080;
     static final int infinity = 99;
@@ -88,8 +88,12 @@ public class Routing extends Thread{
             send(Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
         }*/
         Routing routingTable = new Routing();
-        routingTable.run(null, false);
+        //routingTable.run(null, false);
+        routingTable.socket = null;
+        routingTable.action = false;
+        routingTable.start();
 
+        System.out.println("DESPUES DE LO DE INICIALIZACION");
         
         //***********    Crea sockets para recibir mensajes    ***********//
         ServerSocket serverSocket = new ServerSocket(PORT); 
@@ -103,16 +107,22 @@ public class Routing extends Thread{
 
         
         while (true) {
+            System.out.println("Esta escuchando");
             Socket socket = serverSocket.accept();
             Routing routing = new Routing();
-            routing.run(socket, true);            
+            routing.socket = socket;
+            routing.action = true;
+            System.out.println("Entro, se creo Thread");
+            //routing.run(socket, true); 
+            routing.start();
         }
     }
 
-
+    Socket socket;
+    boolean action;
     static boolean repeat = false;
 
-    public void run (Socket socket, boolean action) {
+    public void run () {
         if (!action) {
             //***********    Mandamos la tabla    ***********// 
             Set<String> keys = Dv.keySet();
@@ -275,14 +285,14 @@ public class Routing extends Thread{
 
     static void send(String dv, String letter)  {
         String ip = getIpFromLetter(letter);
-        System.out.println("SEND TO -> " + letter + " (" + ip + ")" + " ----->" + dv);
+        System.out.println("SEND TO -> " + letter + " (" + ip + ")" + " ----->\n" + dv);
         try (Socket socket = new Socket(ip, PORT)) {
  
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
  
             dataOutputStream.writeUTF(dv);
-            //dataOutputStream.flush();
+            dataOutputStream.flush();
 
             //System.out.println(dv);
 
