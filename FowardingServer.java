@@ -45,11 +45,25 @@ public class FowardingServer extends Thread {
                 //// EVALUAR LA REQUEST
                 eval(request, requestDecoded, myHost);             
                 
-                dataInputStream.close();
-                dataOutputStream.close();
+                //dataInputStream.close();
+                //dataOutputStream.close();
             }            
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        finally{ 
+            try { 
+                if (dataOutputStream != null) { 
+                    dataOutputStream.close(); 
+                } 
+                if (dataInputStream != null) { 
+                    dataInputStream.close(); 
+                    newClient.close(); 
+                } 
+            } 
+            catch (Exception e) { 
+                e.printStackTrace(); 
+            } 
         }
     }
 
@@ -86,18 +100,32 @@ public class FowardingServer extends Thread {
             dataOutputStream.writeUTF(request);
             System.out.println("Archivo entregado a: " + local);
             
-            dataInputStream.close();
-            dataOutputStream.close();
+            //dataInputStream.close();
+            //dataOutputStream.close();
             //socket.close();
         }catch (Exception e){
             e.printStackTrace();
+        }
+        finally{
+            try {
+                if (dataOutputStream != null) {
+                    dataOutputStream.close();
+                }
+                if (dataInputStream != null) {
+                    dataInputStream.close();
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public static void doRedirect (String request, HashMap<String, String> requestDecoded) {
         String toHost = table.get(requestDecoded.get("To")).link;
-        System.out.println("Es redirección");
-        Sender sender = new Sender(toHost, PORT_FORWARDING, request);
+        System.out.println("Es redirección" + toHost);
+        Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, request);
+        System.out.println(toHost);
         sender.send();
         System.out.println("Mensaje reenviado a: " + toHost);
     }
