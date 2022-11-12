@@ -14,29 +14,75 @@ public class Server {
     private static long size;
 
     public static void main(String[] args) {
-      // get input from user terminal using system.in
-      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-      String input = "";
-      
-        try(ServerSocket serverSocket = new ServerSocket(5000)){
-            while(!input.equals("exit")){
-              System.out.println("Esperando Conexion...");
-              Socket clientSocket = serverSocket.accept();
-              dataInputStream = new DataInputStream(clientSocket.getInputStream());
-              dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+        ServerSocket server = null;
 
-              System.out.println("Esperando Archivo...");
-              receiveData();
-              System.out.println("Archivo Recibido");
+        try{
+            server = new ServerSocket(9080);
+            server.setReuseAddress(true);
 
-              System.out.println("Presione Enter para continuar o escriba 'exit' para salir");
-              input = bufferedReader.readLine();
-              dataInputStream.close();
-              dataOutputStream.close();
-              clientSocket.close();
+            while(true){
+                Socket client =  server.accept();
+                System.out.println("New client connected " + client.getInetAddress().getHostAddress());
+                
+                ClientHandler clientSock = new ClientHandler(client);
+                new Thread(clientSock).start();
             }
-        } catch (Exception e){
+        }catch(Exception e) {
             e.printStackTrace();
+        }
+        finally {
+            if (server != null) {
+                try {
+                    server.close();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static class ClientHandler implements Runnable{
+        private final Socket socketClient;
+
+        //Constructor para el cliente
+        public ClientHandler(Socket socket){
+            this.socketClient = socket;
+        }
+
+        public void run(){
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+            String input = "";
+
+            try{
+                while(!input.equals("exit")){
+                    dataInputStream = new DataInputStream(socketClient.getInputStream());
+                    dataOutputStream = new DataOutputStream(socketClient.getOutputStream());
+
+                    System.out.println("Esperando Archivo...");
+                    receiveData();
+                    System.out.println("Archivo Recibido");
+
+                    System.out.println("Presione Enter para continuar o escriba 'exit' para salir");
+                    input = bufferedReader.readLine();
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            finally{
+                try {
+                    if (dataOutputStream != null) {
+                        dataOutputStream.close();
+                    }
+                    if (dataInputStream != null) {
+                        dataInputStream.close();
+                        socketClient.close();
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

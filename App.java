@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
+import java.util.Scanner;
 
 public class App {
 
@@ -20,7 +21,41 @@ public class App {
     //private static long size;
 
     public static void clientConnection () {
+        Scanner sc = new Scanner(System.in);
+        try(Socket socket = new Socket("localhost", 9081)) {
+            while(true){
+                dataInputStream = new DataInputStream(socket.getInputStream());
+                dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                System.out.println("Ingrese el destino: ");
+                String To = sc.nextLine();
+                System.out.println("Ingrese nombre del archivo: ");
+                String Name = sc.nextLine();
+                System.out.println("Ingrese tamaño del archivo: ");
+                String size = sc.nextLine();
+                dataOutputStream.writeUTF("From: P\n"+"To: "+To+"\nName: "+Name+"\nSize: "+size);
 
+                /*if(dataInputStream.readUTF() == null){
+                    break;
+                }else{
+                    String[] paramsRes = decodeRequest();
+                }*/
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally{
+                try {
+                    if (dataOutputStream != null) {
+                        dataOutputStream.close();
+                    }
+                    if (dataInputStream != null) {
+                        dataInputStream.close();
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
     }
 
     public static void receiveRequest () {
@@ -97,6 +132,7 @@ public class App {
     }
 
     public static void main(String[] args) {
+        App.clientConnection();
         App.receiveRequest();
 
     }
