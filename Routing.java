@@ -201,6 +201,7 @@ public class Routing extends Thread {
                 writeToFile(Dv);
                 hasChange = false;
             }
+            break;
         }
     }
 
