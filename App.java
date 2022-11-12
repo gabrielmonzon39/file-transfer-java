@@ -20,7 +20,17 @@ public class App {
     //private static long size;
 
     public static void clientConnection () {
+        try(Socket socket = new Socket("localhost", 9081)) {
+            dataInputStream = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
+            dataOutputStream.writeUTF("hola");
+            
+            dataInputStream.close();
+            dataOutputStream.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public static void receiveRequest () {
@@ -97,6 +107,7 @@ public class App {
     }
 
     public static void main(String[] args) {
+        App.clientConnection();
         App.receiveRequest();
 
     }
