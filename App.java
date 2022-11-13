@@ -22,8 +22,13 @@ public class App {
 
     public static void clientConnection () {
         Scanner sc = new Scanner(System.in);
-        try(Socket socket = new Socket("localhost", 9081)) {
-            while(true){
+        Hosts hosts = new Hosts();
+        String myHost = hosts.getMyAddress();
+        System.out.println("Ingrese IP: ");
+        String ip = sc.nextLine();
+        try(Socket socket = new Socket(ip, 9081)) {
+            while(true){ 
+                /* Realizar Peticion  */
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
                 System.out.println("Ingrese el destino: ");
@@ -32,12 +37,13 @@ public class App {
                 String Name = sc.nextLine();
                 System.out.println("Ingrese tamaño del archivo: ");
                 String size = sc.nextLine();
-                dataOutputStream.writeUTF("From: P\n"+"To: "+To+"\nName: "+Name+"\nSize: "+size);
+                dataOutputStream.writeUTF("From:" + myHost + "\n"+"To: "+To+"\nName: "+Name+"\nSize: "+size);
 
                 /*if(dataInputStream.readUTF() == null){
                     break;
                 }else{
                     String[] paramsRes = decodeRequest();
+                    makeResponse(paramsRes);
                 }*/
             }
         }catch (Exception e){
@@ -67,6 +73,7 @@ public class App {
               String[] params = decodeRequest();
               makeResponse(params);
               //System.out.println(response);
+              //dataOutputStream.writeUTF(makeResponse(params));
               dataInputStream.close();
               dataOutputStream.close();
               clientSocket.close();
@@ -111,6 +118,45 @@ public class App {
                 chunks[i] = buffer;
             }
 
+            dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[frag].clone(), frag, size));
+            dataOutputStream.flush();
+
+            ConsoleLog.printMessage(from, to, name, size, frag, ConsoleLog.SENT);
+            Log.makeLog(from, to, name, size, frag, ConsoleLog.SENT, !Log.END);
+
+            fileOutputStream.close();           
+            fileInputStream.close();
+        } catch (Exception e) {
+            return Messages.makeError(from, to, 0);
+        }
+        return Messages.makeResponse(from, to, name, chunks[frag], frag, size);
+    } 
+
+    /*public static String makeResponse (String[] params) {
+        String from = params[0];
+        String to = params[1];
+        String name = params[2];
+        int size = Integer.parseInt(params[3]);
+        //byte[] result;
+
+        long noChunks = (size%((long)CHUNKSIZE)==0L) ? size/((long)CHUNKSIZE) : size/((long)CHUNKSIZE)+1;
+        chunks = new byte[(int)noChunks][CHUNKSIZE];
+
+        Random random = new Random();  
+        int frag = random.nextInt((int) noChunks);   
+
+        try {
+            File file = new File(PATH+name);
+            FileInputStream fileInputStream = new FileInputStream(file);
+
+            // break file into chunks
+            byte[] buffer;
+            for (int i = 0; i < (int)noChunks; i++) {
+                buffer = new byte[CHUNKSIZE];
+                fileInputStream.read(buffer);
+                chunks[i] = buffer;
+            }
+
             for (int i = 0; i < (int)noChunks; i++) {
                 dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[i].clone(), i, size));
                 dataOutputStream.flush();
@@ -129,14 +175,13 @@ public class App {
             return Messages.makeError(from, to, 0);
         }
         return Messages.makeResponse(from, to, name, chunks[frag], frag, size);
-    }
+    } */
 
     public static void main(String[] args) {
         App.clientConnection();
-        App.receiveRequest();
+        //App.receiveRequest();
 
     }
     
 }
-
 
