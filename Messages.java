@@ -17,10 +17,10 @@ public class Messages {
             hex += String.format("%02X", i);
         }
   
-        return "From: " + from + "\n" +
-               "To: " + to + "\n" +
+        return "From: " + to + "\n" +
+               "To: " + from + "\n" +
                "Name: " + name + "\n" +
-               "Data: " + hex +
+               "Data: " + hex + "\n"  +
                "Frag: " + frag + "\n" +
                "Size: " + size;
     }
