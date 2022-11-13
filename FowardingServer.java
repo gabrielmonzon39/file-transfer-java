@@ -12,6 +12,7 @@ import java.io.EOFException;
 public class FowardingServer extends Thread {
     private static final int PORT_FORWARDING = 9081;
     private static final int PORT_APP = 6666;
+     private static final int PORT_RECEIVER = 5000;
     private static final String PATH = "./RoutingTable.txt";
     private static final String[] params = {"From", "To", "Name", "Size"};
     private static final String[] paramsFile = {"From", "To", "Name", "Data", "Frag", "Size"};
@@ -102,25 +103,32 @@ public class FowardingServer extends Thread {
 
     public static void doFileRequest (String request, HashMap<String, String> requestDecoded, String local) {
         System.out.println("Es transferencia de archivos.");
-        try(Socket socket = new Socket("localhost", PORT_APP)) {
+         String prueba;
+
+        //Envio a Receiver
+        try(
+            Socket socket = new Socket("localhost", PORT_APP)) {
             dataInputStream = new DataInputStream(socket.getInputStream());
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
             dataOutputStream.writeUTF(request);
             System.out.println("Archivo entregado a: " + local);
-            String prueba = dataInputStream.readUTF();
+            prueba = dataInputStream.readUTF();
             doRedirect2(prueba,requestDecoded.get("From"));
+
             System.out.println(separator);
             System.out.println();
             
             //dataInputStream.close();
             //dataOutputStream.close();
             //socket.close();
-        }catch (EOFException e) {
-
-        }catch (Exception e){
+        }
+        catch (EOFException e) {
+            
+        } catch (Exception e){
             e.printStackTrace();
         }
+     
         finally{
             try {
                 if (dataOutputStream != null) {
@@ -158,11 +166,11 @@ public class FowardingServer extends Thread {
         }catch (Exception e){
             e.printStackTrace();
         }*/
-
+       
         sender.send();
         System.out.println("Mensaje reenviado a: " + toHost);
     }
-
+    
     public static HashMap<String, String> decodeRequest (String request) throws Exception {
         HashMap<String, String> requestDecoded = new HashMap<>();
         if((request.split("\n")).length == 4){

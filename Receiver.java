@@ -1,10 +1,23 @@
 import java.io.*;
 import java.net.Socket;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.io.EOFException;
+
 
 public class Receiver {
     private static final String PATH = "./Received/";
     private static final String IP = "127.0.0.1";
-    private static final int PORT_RECEIVER = 6666;
+    private static final int PORT_RECEIVER = 5000;
     private static final int CHUNKSIZE = 1460;
     private static final int RESPONSEFIELDQUANTITY = 6;
 
@@ -129,28 +142,20 @@ public class Receiver {
     }
 
     public static void main(String[] args) {
-        Information filesInfo = new Information();
-        Hosts hosts = new Hosts();
-
-        while (filesInfo.hasRemainingFiles()) {
-            FileData file = filesInfo.getFile();
-
-            if (file == null) break;
-
-            try(Socket socket = new Socket(IP, PORT_RECEIVER)) {
-                dataInputStream = new DataInputStream(socket.getInputStream());
-                dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                sendRequest(hosts.getMyAddress(), hosts.getRandomHost(), file.fileName, file.size);      
-                while (!complete) {
+         try(ServerSocket socket = new ServerSocket(PORT_RECEIVER)) {
+                while(true){ 
+                    Socket clientsocket = socket.accept();
+                    dataInputStream = new DataInputStream(clientsocket.getInputStream());
+                    dataOutputStream = new DataOutputStream(clientsocket.getOutputStream());
                     decodeResponse();
+             
+                    dataInputStream.close();
+                    dataOutputStream.close();
                 }
-                reset();
-                dataInputStream.close();
-                dataOutputStream.close();
             }catch (Exception e){
                 e.printStackTrace();
             }
-        }
+       
 
     }
 
