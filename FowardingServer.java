@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.io.EOFException;
 
 public class FowardingServer extends Thread {
     private static final int PORT_FORWARDING = 9081;
@@ -15,16 +16,17 @@ public class FowardingServer extends Thread {
     private static final String[] params = {"From", "To", "Name", "Size"};
 
     private static DataOutputStream dataOutputStream = null;
+    public static final String separator = "--------------------------------------------------------------------";
     private static DataInputStream dataInputStream = null;
 
     static HashMap<String, Costo> table;
     private Socket newClient;
     private String myHost;
 
-    public FowardingServer(Socket newClient, String myHost){
+   /* public FowardingServer(Socket newClient, String myHost){
         this.newClient = newClient;
         this.myHost = myHost;
-    }
+    }*/
 
     //@Override
     public void run(){
@@ -48,9 +50,12 @@ public class FowardingServer extends Thread {
                 //dataInputStream.close();
                 //dataOutputStream.close();
             }            
-        } catch (Exception e) {
+        } catch (EOFException e) {
+            
+        } catch( Exception e){
             e.printStackTrace();
-        }
+        } 
+        
         finally{ 
             try { 
                 if (dataOutputStream != null) { 
@@ -69,6 +74,8 @@ public class FowardingServer extends Thread {
 
     public static void readTable() {
         try {  
+
+            // Leer RoutingTable.txt
             FileInputStream fis = new FileInputStream(PATH);       
             Scanner scanLine = new Scanner(fis);
             table = new HashMap<>();
@@ -84,6 +91,7 @@ public class FowardingServer extends Thread {
     }
 
     public static void eval(String request, HashMap<String, String> requestDecoded, String myHost) {
+        //Determinar si es para nosotros
         if (requestDecoded.get("To").equals(myHost)) {
             doFileRequest(request, requestDecoded, myHost);
         } else {
@@ -93,12 +101,14 @@ public class FowardingServer extends Thread {
 
     public static void doFileRequest (String request, HashMap<String, String> requestDecoded, String local) {
         System.out.println("Es transferencia de archivos.");
-        try(Socket socket = new Socket(local, PORT_APP)) {
+        try(Socket socket = new Socket("localhost", PORT_APP)) {
             dataInputStream = new DataInputStream(socket.getInputStream());
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
             dataOutputStream.writeUTF(request);
             System.out.println("Archivo entregado a: " + local);
+            System.out.println(separator);
+            System.out.println();
             
             //dataInputStream.close();
             //dataOutputStream.close();
@@ -123,7 +133,7 @@ public class FowardingServer extends Thread {
 
     public static void doRedirect (String request, HashMap<String, String> requestDecoded) {
         String toHost = table.get(requestDecoded.get("To")).link;
-        System.out.println("Es redirección" + toHost);
+        System.out.println("Es redirección " + toHost);
         Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, request);
         System.out.println(toHost);
         sender.send();
@@ -145,6 +155,7 @@ public class FowardingServer extends Thread {
         //// INIT
         System.out.println("Fowarding");
         System.out.println("Escuchando en puerto: " + PORT_FORWARDING);
+        System.out.println(separator);
         //readTable();
             
         //// OBTENER MI DIRECCIÓN
@@ -156,11 +167,19 @@ public class FowardingServer extends Thread {
             server.setReuseAddress(true);
 
             while(true){
-                Socket client =  server.accept();
-                System.out.println("Nuevo clienta conectado: " + client.getInetAddress().getHostAddress());
+                Socket client =  server.accept(); 
+                System.out.println("Nuevo cliente conectado: " + client.getInetAddress().getHostAddress()); 
+                 
+                FowardingServer clientSock = new FowardingServer(); 
+                clientSock.myHost = myHost; 
+                clientSock.newClient = client; 
+                clientSock.start();
+
+                /*Socket client =  server.accept();
+                System.out.println("Nuevo cliente conectado: " + client.getInetAddress().getHostAddress());
                 
                 FowardingServer clientSock = new FowardingServer(client, myHost);
-                new Thread(clientSock).start();
+                new Thread(clientSock).start();*/
             }
         }catch(Exception e) {
             e.printStackTrace();

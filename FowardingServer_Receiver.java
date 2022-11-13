@@ -1,4 +1,4 @@
-mport java.io.DataInputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class FowardingServer_Receiver extends Thread {
     private Socket newClient;
     private String myHost;
 
-    public FowardingServer(Socket newClient, String myHost){
+    public FowardingServer_Receiver(Socket newClient, String myHost){
         this.newClient = newClient;
         this.myHost = myHost;
     }
