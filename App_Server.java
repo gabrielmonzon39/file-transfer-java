@@ -10,6 +10,7 @@ public class App_Server {
     //private static final int PORT_FORWARDING = 9081;
     //private static final int PORT_SENDER = 7777;
     private static final int PORT_RECEIVER = 6666;
+    private static final int PORT_R = 5000;
     private static final int CHUNKSIZE = 1460;
     private static final int REQUESTFIELDQUANTITY = 4;
     private static DataOutputStream dataOutputStream = null;
@@ -32,7 +33,9 @@ public class App_Server {
               dataInputStream = new DataInputStream(clientSocket.getInputStream());
               dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
               String[] params = decodeRequest();
-              makeResponse(params);
+              if(params.length == 4){
+                makeResponse(params);
+              }
               //dataOutputStream.writeUTF(makeResponse(params));
               //System.out.println(response);
               dataInputStream.close();
@@ -45,13 +48,36 @@ public class App_Server {
     }
 // Obtener los Datos del Mensaje Recibido
     public static String[] decodeRequest () throws Exception {
-        String[] paramsDecoded = new String[REQUESTFIELDQUANTITY];
         String paramsEncoded = dataInputStream.readUTF();
-        paramsDecoded =  paramsEncoded.split("\n");
-        for (int i = 0; i < paramsDecoded.length; i++) {
-            paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
+        if(paramsEncoded.split("\n").length == 4){
+            String[] paramsDecoded = new String[REQUESTFIELDQUANTITY];
+            paramsDecoded =  paramsEncoded.split("\n");
+            for (int i = 0; i < paramsDecoded.length; i++) {
+                paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
+            }
+            return paramsDecoded;    
+        }else{
+            String[] paramsDecoded = new String[6];
+            paramsDecoded =  paramsEncoded.split("\n");
+            for (int i = 0; i < paramsDecoded.length; i++) {
+                paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
+            }
+            try(Socket socket = new Socket("localhost", PORT_R)) {
+                dataInputStream = new DataInputStream(socket.getInputStream());
+                dataOutputStream = new DataOutputStream(socket.getOutputStream());
+    
+                dataOutputStream.writeUTF(paramsEncoded);
+                System.out.println(separator);
+                System.out.println();
+                
+                //dataInputStream.close();
+                //dataOutputStream.close();
+                //socket.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return paramsDecoded;
         }
-        return paramsDecoded;
     }
 //  Responder con el Formato de Mensaje
     public static String makeResponse (String[] params) {

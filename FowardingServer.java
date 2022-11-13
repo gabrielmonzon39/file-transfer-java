@@ -14,6 +14,7 @@ public class FowardingServer extends Thread {
     private static final int PORT_APP = 6666;
     private static final String PATH = "./RoutingTable.txt";
     private static final String[] params = {"From", "To", "Name", "Size"};
+    private static final String[] paramsFile = {"From", "To", "Name", "Data", "Frag", "Size"};
 
     private static DataOutputStream dataOutputStream = null;
     public static final String separator = "--------------------------------------------------------------------";
@@ -107,12 +108,16 @@ public class FowardingServer extends Thread {
 
             dataOutputStream.writeUTF(request);
             System.out.println("Archivo entregado a: " + local);
+            String prueba = dataInputStream.readUTF();
+            doRedirect2(prueba,requestDecoded.get("From"));
             System.out.println(separator);
             System.out.println();
             
             //dataInputStream.close();
             //dataOutputStream.close();
             //socket.close();
+        }catch (EOFException e) {
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -135,12 +140,49 @@ public class FowardingServer extends Thread {
         String toHost = table.get(requestDecoded.get("To")).link;
         System.out.println("Es redirección " + toHost);
         Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, request);
-        System.out.println(toHost);
+        //System.out.println(toHost);
         sender.send();
         System.out.println("Mensaje reenviado a: " + toHost);
     }
-    
+
+    public static void doRedirect2 (String response, String to) {
+        System.out.println(to);
+        String toHost = table.get(to).link;
+        System.out.println("Es redirección " + toHost);
+        Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, response);
+        System.out.println(toHost);
+
+        /*try {
+            dataOutputStream.writeUTF(response);
+            dataOutputStream.flush();
+        }catch (Exception e){
+            e.printStackTrace();
+        }*/
+
+        sender.send();
+        System.out.println("Mensaje reenviado a: " + toHost);
+    }
+
     public static HashMap<String, String> decodeRequest (String request) throws Exception {
+        HashMap<String, String> requestDecoded = new HashMap<>();
+        if((request.split("\n")).length == 4){
+            String[] paramsDecoded = new String[4];
+            paramsDecoded =  request.split("\n");
+            for (int i = 0; i < paramsDecoded.length; i++) {
+                requestDecoded.put(params[i], paramsDecoded[i].split(":")[1].trim());
+            }
+            return requestDecoded;
+        }else{
+            String[] paramsDecoded = new String[6];
+            paramsDecoded =  request.split("\n");
+            for (int i = 0; i < paramsDecoded.length; i++) {
+                requestDecoded.put(paramsFile[i], paramsDecoded[i].split(":")[1].trim());
+            }
+            return requestDecoded;
+        }
+    }
+    
+    /*public static HashMap<String, String> decodeRequest (String request) throws Exception {
         HashMap<String, String> requestDecoded = new HashMap<>();
         String[] paramsDecoded = new String[4];
         paramsDecoded =  request.split("\n");
@@ -148,7 +190,7 @@ public class FowardingServer extends Thread {
             requestDecoded.put(params[i], paramsDecoded[i].split(":")[1].trim());
         }
         return requestDecoded;
-    }
+    }*/
     
     public static void main(String[] args) {
         ServerSocket server = null;

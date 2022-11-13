@@ -28,6 +28,10 @@ public class Hosts {
 
     public String getRandomHost () {
         Random rand = new Random();
-        return hosts.get(rand.nextInt(hosts.size())+1).split("-")[0];
+        int i = 0;
+        while (i == 0) {
+            i = rand.nextInt(hosts.size());
+        }
+        return hosts.get(i).split("-")[0];
     }
 }
