@@ -77,12 +77,30 @@ public class App_Server {
                 System.out.println(separator);
                 System.out.println();
                 
-                //dataInputStream.close();
-                //dataOutputStream.close();
-                //socket.close();
+                if(!paramsDecoded[2].contains(".txt")){
+                    System.out.println(paramsDecoded[2]);
+                    
+                    dataInputStream.close();
+                    dataOutputStream.close();
+                    
+                }
             }catch (Exception e){
                 e.printStackTrace();
             }
+          /* finally{ 
+            try { 
+                if (dataOutputStream != null) { 
+                    dataOutputStream.close(); 
+                } 
+                if (dataInputStream != null) { 
+                    dataInputStream.close(); 
+                     
+                } 
+            } 
+            catch (Exception e) { 
+                e.printStackTrace(); 
+            } 
+        }*/
             return paramsDecoded;
         }
     }

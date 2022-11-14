@@ -155,6 +155,19 @@ public class Receiver {
             }catch (Exception e){
                 e.printStackTrace();
             }
+            /*finally{ 
+            try { 
+                if (dataOutputStream != null) { 
+                    dataOutputStream.close(); 
+                } 
+                if (dataInputStream != null) { 
+                    dataInputStream.close(); 
+                     
+                } 
+            } 
+            catch (Exception e) { 
+                e.printStackTrace(); 
+            } }*/
        
 
     }

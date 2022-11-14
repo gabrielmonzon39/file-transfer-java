@@ -117,9 +117,13 @@ public class App {
                 fileInputStream.read(buffer);
                 chunks[i] = buffer;
             }
+            for (int i = 0; i < (int)noChunks; i++) {
+                dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[i].clone(), frag, size));
+                dataOutputStream.flush();
+            }
 
-            dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[frag].clone(), frag, size));
-            dataOutputStream.flush();
+            //dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[frag].clone(), frag, size));
+            //dataOutputStream.flush();
 
             ConsoleLog.printMessage(from, to, name, size, frag, ConsoleLog.SENT);
             Log.makeLog(from, to, name, size, frag, ConsoleLog.SENT, !Log.END);
