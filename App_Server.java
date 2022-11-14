@@ -12,7 +12,7 @@ public class App_Server {
     private static final int PORT_RECEIVER = 6666;
     private static final int PORT_R = 5000;
     private static final int CHUNKSIZE = 1460;
-    private static final int REQUESTFIELDQUANTITY = 4;
+    private static final int REQUESTFIELDQUANTITY = 5;
     private static DataOutputStream dataOutputStream = null;
     private static DataInputStream dataInputStream = null;
     private static FileOutputStream fileOutputStream;
@@ -33,7 +33,7 @@ public class App_Server {
               dataInputStream = new DataInputStream(clientSocket.getInputStream());
               dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
               String[] params = decodeRequest();
-              if(params.length == 4){
+              if(params.length == 5){
                 makeResponse(params);
               }
               //dataOutputStream.writeUTF(makeResponse(params));
@@ -49,15 +49,21 @@ public class App_Server {
 // Obtener los Datos del Mensaje Recibido
     public static String[] decodeRequest () throws Exception {
         String paramsEncoded = dataInputStream.readUTF();
-        if(paramsEncoded.split("\n").length == 4){
+        System.out.println(paramsEncoded);
+        if(paramsEncoded.split("\n").length == 5){
             String[] paramsDecoded = new String[REQUESTFIELDQUANTITY];
             paramsDecoded =  paramsEncoded.split("\n");
             for (int i = 0; i < paramsDecoded.length; i++) {
-                paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
+                if(i == paramsDecoded.length-1){
+                    break;
+                }else{
+                    paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
+                }
+                System.out.println(paramsDecoded[i]);
             }
             return paramsDecoded;    
         }else{
-            String[] paramsDecoded = new String[6];
+            String[] paramsDecoded = new String[7];
             paramsDecoded =  paramsEncoded.split("\n");
             for (int i = 0; i < paramsDecoded.length; i++) {
                 paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();

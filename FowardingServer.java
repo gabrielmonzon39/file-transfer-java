@@ -14,8 +14,8 @@ public class FowardingServer extends Thread {
     private static final int PORT_APP = 6666;
      private static final int PORT_RECEIVER = 5000;
     private static final String PATH = "./RoutingTable.txt";
-    private static final String[] params = {"From", "To", "Name", "Size"};
-    private static final String[] paramsFile = {"From", "To", "Name", "Data", "Frag", "Size"};
+    private static final String[] params = {"From", "To", "Name", "Size", "EOF"};
+    private static final String[] paramsFile = {"From", "To", "Name", "Data", "Frag", "Size", "EOF"};
 
     private static DataOutputStream dataOutputStream = null;
     public static final String separator = "--------------------------------------------------------------------";
@@ -173,18 +173,27 @@ public class FowardingServer extends Thread {
     
     public static HashMap<String, String> decodeRequest (String request) throws Exception {
         HashMap<String, String> requestDecoded = new HashMap<>();
-        if((request.split("\n")).length == 4){
-            String[] paramsDecoded = new String[4];
+        if((request.split("\n")).length == 5){
+            String[] paramsDecoded = new String[5];
             paramsDecoded =  request.split("\n");
             for (int i = 0; i < paramsDecoded.length; i++) {
-                requestDecoded.put(params[i], paramsDecoded[i].split(":")[1].trim());
+                if(i == paramsDecoded.length-1){
+                    requestDecoded.put(params[i], paramsDecoded[i]);
+                }else{
+                    requestDecoded.put(params[i], paramsDecoded[i].split(":")[1].trim());
+                }
             }
             return requestDecoded;
         }else{
-            String[] paramsDecoded = new String[6];
+            String[] paramsDecoded = new String[7];
             paramsDecoded =  request.split("\n");
             for (int i = 0; i < paramsDecoded.length; i++) {
-                requestDecoded.put(paramsFile[i], paramsDecoded[i].split(":")[1].trim());
+                if(i == paramsDecoded.length-1){
+                    System.out.println(paramsDecoded[i]);
+                    requestDecoded.put(paramsFile[i], paramsDecoded[i]);    
+                }else{
+                    requestDecoded.put(paramsFile[i], paramsDecoded[i].split(":")[1].trim());
+                }
             }
             return requestDecoded;
         }

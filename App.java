@@ -37,7 +37,7 @@ public class App {
                 String Name = sc.nextLine();
                 System.out.println("Ingrese tamaño del archivo: ");
                 String size = sc.nextLine();
-                dataOutputStream.writeUTF("From:" + myHost + "\n"+"To: "+To+"\nName: "+Name+"\nSize: "+size);
+                dataOutputStream.writeUTF("From:" + myHost + "\n"+"To:"+To+"\nName:"+Name+"\nSize:"+size+ "\nEOF");
 
                 /*if(dataInputStream.readUTF() == null){
                     break;

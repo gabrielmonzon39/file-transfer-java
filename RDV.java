@@ -5,18 +5,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+//import java.io.InputStream;
+//import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
+//import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;  
-public class Routing extends Thread {
+public class RDV extends Thread {
 
     static final int PORT = 9080;
     static final int infinity = 99;
@@ -37,6 +37,8 @@ public class Routing extends Thread {
     public static ArrayList<String> vecinos = new ArrayList<>();
 
     static String from;
+    private static DataOutputStream dataOutputStream = null;
+    private static DataInputStream dataInputStream = null;
 
     public static void main(String[] args) throws Exception {
         myLetter = args[0];
@@ -87,7 +89,7 @@ public class Routing extends Thread {
             sendHello(key, myHost);
             send(Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
         }*/
-        Routing routingTable = new Routing();
+        RDV routingTable = new RDV();
         //routingTable.run(null, false);
         routingTable.socket = null;
         routingTable.action = false;
@@ -106,15 +108,29 @@ public class Routing extends Thread {
         boolean hasChange = false;
 
         
-        while (true) {
-            System.out.println("Esta escuchando");
-            Socket socket = serverSocket.accept();
-            Routing routing = new Routing();
-            routing.socket = socket;
-            routing.action = true;
-            System.out.println("Entro, se creo Thread");
-            //routing.run(socket, true); 
-            routing.start();
+        try{
+            while (true) {
+                //System.out.println("Esta escuchando");
+                Socket socket = serverSocket.accept();
+                RDV routing = new RDV();
+                routing.socket = socket;
+                routing.action = true;
+                System.out.println("Thread Creado");
+                //routing.run(socket, true); 
+                routing.start();
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (serverSocket != null) {
+                try {
+                    serverSocket.close();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -136,12 +152,87 @@ public class Routing extends Thread {
             return;
         }
 
-        DatagramPacket DpReceive = null;
+        //DatagramPacket DpReceive = null;
         boolean hasChange = false;
-        DataOutputStream dataOutputStream = null;
-        DataInputStream dataInputStream = null;
+        //DataOutputStream dataOutputStream = null;
+        //DataInputStream dataInputStream = null;
 
-        while (true) {
+        try{
+            dataInputStream  = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
+            String request = "";
+            while(true){
+                request = dataInputStream.readUTF();
+                if (request == null || request.equals("")) {
+                    continue;
+                }
+
+                String data = request;
+
+                //System.out.println("**************************" + data + "**************************");
+
+                if (data.toLowerCase().contains("hello")) {
+                    sendWelcome(data, myHost);
+                } else if (data.toLowerCase().contains("keepalive") || data.toLowerCase().contains("welcome")) {
+                    //System.out.println("ES UN KEEPALIVE O WELCOME");
+                    from = data.split("\n")[0].split(":")[1];
+                    resetTimeExceeded(from);
+                } else {
+                    decode(data);
+                    resetTimeExceeded(from);
+                }
+                
+                //***********    Hacemos el algoritmo    ***********/
+                if (DvReceived == null) continue;
+                Set<String> receiveKeys = DvReceived.keySet();
+                for (String key : receiveKeys) {
+                    if (Dv.get(key) == null) {
+                        Dv.put(key, new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
+                        changed.put(key, new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
+                        try {
+                            hostsWriter = new FileWriter("./hosts.txt", true);
+                            hostsWriter.write(key+"-"+Dv.get(from).ip+"\n");
+                            hostsWriter.close();
+                        } catch (IOException e) {
+                            ConsoleLog.printError();
+                        }
+                        hasChange = true;
+                        continue;
+                    }
+                    if (DvReceived.get(key).costo + Dv.get(from).costo < Dv.get(key).costo) {
+                        hasChange = true;
+                        Dv.replace(key, new Costo(DvReceived.get(key).ip, DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
+                        changed.put(key, new Costo(DvReceived.get(key).ip, DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
+                    }
+                }
+                
+                //***********    Escribe en el archivo el nuevo vector    ***********//
+                if (hasChange) {
+                    writeToFile(Dv);
+                    hasChange = false;
+                }
+                break;
+            }
+        }catch(Exception e1) {
+            //continue;
+            ConsoleLog.printError();
+            e1.printStackTrace();
+        }
+        /*finally{ 
+            try { 
+                if (dataOutputStream != null) { 
+                    dataOutputStream.close(); 
+                } 
+                if (dataInputStream != null) { 
+                    dataInputStream.close(); 
+                    socket.close(); 
+                } 
+            } 
+            catch (Exception e) { 
+                e.printStackTrace(); 
+            } 
+        }
+        /*while (true) {
             String request = "";
 
             try {
@@ -172,8 +263,8 @@ public class Routing extends Thread {
                 resetTimeExceeded(from);
             }
             
-            //***********    Hacemos el algoritmo    ***********// 
-            if (DvReceived == null) continue;
+            //***********    Hacemos el algoritmo    ***********/
+            /*if (DvReceived == null) continue;
             Set<String> receiveKeys = DvReceived.keySet();
             for (String key : receiveKeys) {
                 if (Dv.get(key) == null) {
@@ -196,13 +287,13 @@ public class Routing extends Thread {
                 }
             }
             
-            //***********    Escribe en el archivo el nuevo vector    ***********// 
+            //***********    Escribe en el archivo el nuevo vector    ***********//* 
             if (hasChange) {
                 writeToFile(Dv);
                 hasChange = false;
             }
             break;
-        }
+        }*/
     }
 
     public static String getIpFromLetter (String hostletter) {
