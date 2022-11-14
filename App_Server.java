@@ -67,6 +67,7 @@ public class App_Server {
             paramsDecoded =  paramsEncoded.split("\n");
             for (int i = 0; i < paramsDecoded.length; i++) {
                 paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
+                System.out.println();
             }
             try(Socket socket = new Socket("localhost", PORT_R)) {
                 dataInputStream = new DataInputStream(socket.getInputStream());
@@ -102,21 +103,43 @@ public class App_Server {
         try {
             File file = new File(PATH+name);
             FileInputStream fileInputStream = new FileInputStream(file);
-
+            int length = (int) file.length();
+            int sizeAux = length-((int)noChunks-1)*CHUNKSIZE;
+            System.out.println(sizeAux);
             // break file into chunks
             byte[] buffer;
             for (int i = 0; i < (int)noChunks; i++) {
+                if(i == (int)noChunks-1){
+                    buffer = new byte[sizeAux];
+                    fileInputStream.read(buffer);
+                    chunks[i] = buffer;
+                }else{
+                    buffer = new byte[CHUNKSIZE];
+                    fileInputStream.read(buffer);
+                    chunks[i] = buffer;
+                }
+            }
+            /*for (int i = 0; i < (int)noChunks; i++) {
                 buffer = new byte[CHUNKSIZE];
                 fileInputStream.read(buffer);
                 chunks[i] = buffer;
+            }*/
+
+            for (int i = 0; i < (int)noChunks; i++) {
+                //System.out.println(chunks[i]);
+                dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[i].clone(), i, size));
+                System.out.println(Messages.makeResponse(from, to, name, chunks[i].clone(), i, size));
+                dataOutputStream.flush();
+                ConsoleLog.printMessage(from, to, name, size, i, ConsoleLog.SENT);
+                Log.makeLog(from, to, name, size, i, ConsoleLog.SENT, !Log.END);
             }
 
-            dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[frag].clone(), frag, size));
-            dataOutputStream.flush();
+            //dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[frag].clone(), frag, size));
+            //dataOutputStream.flush();
 
             // LOGS
-            ConsoleLog.printMessage(from, to, name, size, frag, ConsoleLog.SENT);
-            Log.makeLog(from, to, name, size, frag, ConsoleLog.SENT, !Log.END);
+            //ConsoleLog.printMessage(from, to, name, size, frag, ConsoleLog.SENT);
+            //Log.makeLog(from, to, name, size, frag, ConsoleLog.SENT, !Log.END);
 
             fileOutputStream.close();           
             fileInputStream.close();
