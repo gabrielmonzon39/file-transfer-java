@@ -12,7 +12,8 @@ import java.io.EOFException;
 public class FowardingServer extends Thread {
     private static final int PORT_FORWARDING = 9081;
     private static final int PORT_APP = 6666;
-     private static final int PORT_RECEIVER = 5000;
+    private static final int PORT_RECEIVER = 5000;
+    private static final int CHUNKSIZE = 1460;
     private static final String PATH = "./RoutingTable.txt";
     private static final String[] params = {"From", "To", "Name", "Size", "EOF"};
     private static final String[] paramsFile = {"From", "To", "Name", "Data", "Frag", "Size", "EOF"};
@@ -20,6 +21,7 @@ public class FowardingServer extends Thread {
     private static DataOutputStream dataOutputStream = null;
     public static final String separator = "--------------------------------------------------------------------";
     private static DataInputStream dataInputStream = null;
+    private static long noChunks;
 
     static HashMap<String, Costo> table;
     private Socket newClient;
@@ -65,7 +67,7 @@ public class FowardingServer extends Thread {
                 } 
                 if (dataInputStream != null) { 
                     dataInputStream.close(); 
-                    newClient.close(); 
+                    //newClient.close(); 
                 } 
             } 
             catch (Exception e) { 
@@ -113,11 +115,14 @@ public class FowardingServer extends Thread {
 
             dataOutputStream.writeUTF(request);
             System.out.println("Archivo entregado a: " + local);
-            prueba = dataInputStream.readUTF();
-            doRedirect2(prueba,requestDecoded.get("From"));
+            noChunks = (Integer.parseInt(requestDecoded.get("Size"))%((long)CHUNKSIZE)==0L) ? Integer.parseInt(requestDecoded.get("Size"))/((long)CHUNKSIZE) : Integer.parseInt(requestDecoded.get("Size"))/((long)CHUNKSIZE)+1;
+            for(int i = 0; i<(int)noChunks; i++){
+                prueba = dataInputStream.readUTF();
+                doRedirect2(prueba,requestDecoded.get("From"));
 
-            System.out.println(separator);
-            System.out.println();
+                System.out.println(separator);
+                System.out.println();
+            }
             
             //dataInputStream.close();
             //dataOutputStream.close();

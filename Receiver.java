@@ -149,8 +149,8 @@ public class Receiver {
                     dataOutputStream = new DataOutputStream(clientsocket.getOutputStream());
                     decodeResponse();
              
-                    dataInputStream.close();
-                    dataOutputStream.close();
+                    //dataInputStream.close();
+                    //dataOutputStream.close();
                 }
             }catch (Exception e){
                 e.printStackTrace();
