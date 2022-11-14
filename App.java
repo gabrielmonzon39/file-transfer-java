@@ -41,8 +41,8 @@ public class App {
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-                dataOutputStream.writeUTF("From:" + myHost + "\n" + "To: " + hosts.getRandomHost() +
-                                            "\nName: " + file.fileName + "\nSize: " + file.size + "\nEOF");
+                dataOutputStream.writeUTF("From:" + myHost + "\n" + "To:" + "Z" +
+                                            "\nName:" + file.fileName + "\nSize:" + file.size + "\nEOF");
                 
                 System.out.print("Presione ENTER para solicitar otro archivo...");
                 sc.nextLine();
@@ -74,7 +74,7 @@ public class App {
         String ip = sc.nextLine();
         try(Socket socket = new Socket(ip, 9081)) {
             while(true){ 
-                //Realizar Peticion  
+                // Realizar Peticion  
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
                 System.out.println("Ingrese el destino: ");
@@ -108,7 +108,7 @@ public class App {
                     e.printStackTrace();
                 }
             }
-    }
+    }//*/
 
     public static void receiveRequest () {
         try(ServerSocket serverSocket = new ServerSocket(PORT_RECEIVER)){

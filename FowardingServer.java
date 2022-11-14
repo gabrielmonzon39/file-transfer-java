@@ -44,6 +44,7 @@ public class FowardingServer extends Thread {
                 //// OBTENER LA REQUEST
                 String request = dataInputStream.readUTF();
                 System.out.println(request);
+                //System.out.println(myHost);
 
                 //// DECODIFICAR LA REQUEST
                 HashMap<String, String> requestDecoded = decodeRequest(request);
@@ -115,7 +116,10 @@ public class FowardingServer extends Thread {
 
             dataOutputStream.writeUTF(request);
             System.out.println("Archivo entregado a: " + local);
-            noChunks = (Integer.parseInt(requestDecoded.get("Size"))%((long)CHUNKSIZE)==0L) ? Integer.parseInt(requestDecoded.get("Size"))/((long)CHUNKSIZE) : Integer.parseInt(requestDecoded.get("Size"))/((long)CHUNKSIZE)+1;
+            System.out.println(requestDecoded);
+            String Size = requestDecoded.get("Size");
+            System.out.println(requestDecoded.get("Size"));
+            noChunks = (Integer.parseInt(Size)%((long)CHUNKSIZE)==0L) ? Integer.parseInt(Size)/((long)CHUNKSIZE) : Integer.parseInt(Size)/((long)CHUNKSIZE)+1;
             for(int i = 0; i<(int)noChunks; i++){
                 prueba = dataInputStream.readUTF();
                 doRedirect2(prueba,requestDecoded.get("From"));
@@ -194,7 +198,7 @@ public class FowardingServer extends Thread {
             paramsDecoded =  request.split("\n");
             for (int i = 0; i < paramsDecoded.length; i++) {
                 if(i == paramsDecoded.length-1){
-                    System.out.println(paramsDecoded[i]);
+                    //System.out.println(paramsDecoded[i]);
                     requestDecoded.put(paramsFile[i], paramsDecoded[i]);    
                 }else{
                     requestDecoded.put(paramsFile[i], paramsDecoded[i].split(":")[1].trim());

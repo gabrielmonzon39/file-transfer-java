@@ -152,8 +152,8 @@ public class Receiver {
                         reset();
                     }
              
-                    dataInputStream.close();
-                    dataOutputStream.close();
+                    //dataInputStream.close();
+                    //dataOutputStream.close();
                 }
             }catch (Exception e){
                 e.printStackTrace();

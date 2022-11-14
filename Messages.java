@@ -22,7 +22,7 @@ public class Messages {
                "Name: " + name + "\n" +
                "Data: " + hex + "\n"  +
                "Frag: " + frag + "\n" +
-               "Size: " + size;
+               "Size: " + size + "\nEOF";
     }
 
     public static String makeError (String from, String to, int option) {
