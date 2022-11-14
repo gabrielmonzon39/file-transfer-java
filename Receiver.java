@@ -148,9 +148,12 @@ public class Receiver {
                     dataInputStream = new DataInputStream(clientsocket.getInputStream());
                     dataOutputStream = new DataOutputStream(clientsocket.getOutputStream());
                     decodeResponse();
+                    if(complete){
+                        reset();
+                    }
              
-                    //dataInputStream.close();
-                    //dataOutputStream.close();
+                    dataInputStream.close();
+                    dataOutputStream.close();
                 }
             }catch (Exception e){
                 e.printStackTrace();

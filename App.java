@@ -20,6 +20,52 @@ public class App {
     private static byte[][] chunks;
     //private static long size;
 
+    /*public static void clientConnection () {
+        Scanner sc = new Scanner(System.in);
+
+        Information filesInfo = new Information();
+
+        Hosts hosts = new Hosts();
+        String myHost = hosts.getMyAddress();
+
+        try(Socket socket = new Socket("localhost", 9081)) {
+            while(true){ 
+
+                if (!filesInfo.hasRemainingFiles()) {
+                    break;
+                }
+
+                FileData file = filesInfo.getFile();
+                if (file == null) break;
+
+                dataInputStream = new DataInputStream(socket.getInputStream());
+                dataOutputStream = new DataOutputStream(socket.getOutputStream());
+
+                dataOutputStream.writeUTF("From:" + myHost + "\n" + "To: " + hosts.getRandomHost() +
+                                            "\nName: " + file.fileName + "\nSize: " + file.size + "\nEOF");
+                
+                System.out.print("Presione ENTER para solicitar otro archivo...");
+                sc.nextLine();
+                
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            try {
+                if (dataOutputStream != null) {
+                    dataOutputStream.close();
+                }
+                if (dataInputStream != null) {
+                    dataInputStream.close();
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }*/
+
     public static void clientConnection () {
         Scanner sc = new Scanner(System.in);
         Hosts hosts = new Hosts();
@@ -28,7 +74,7 @@ public class App {
         String ip = sc.nextLine();
         try(Socket socket = new Socket(ip, 9081)) {
             while(true){ 
-                /* Realizar Peticion  */
+                //Realizar Peticion  
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
                 System.out.println("Ingrese el destino: ");
