@@ -1,26 +1,30 @@
 import java.net.SocketException;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
  
 class Helper extends TimerTask {
     static final int infinity = 99;
-    public static int i = 0;
+    public int i = 0;
     int T;
     int U;
+    String key;
+    Routing routing;
 
-    public Helper (int timerT, int timerU) {
+    public Helper (int timerT, int timerU, String key, Routing routing) {
         this.T = timerT;
         this.U = timerU;
+        this.key = key;
+        this.routing = routing;
     }
     
     // TimerTask.run() method will be used to perform the action of the task
     public void run() {
         i++;
+        //System.out.println(i + " : " + T);
         if (i >= T) {
             try {
-                Routing.sendTimeoutMessage();
+                routing.sendTimeoutMessage();
             } catch (SocketException e) {
                 e.printStackTrace();
             }
@@ -28,54 +32,45 @@ class Helper extends TimerTask {
         }
         
         // Disminuir time de los vecinos
-        Set<String> keys = Routing.timeRemaining.keySet();
-        for (String key : keys) {
-            //System.out.println("Cambiando");
-            int remaining = Routing.timeRemaining.get(key) - 1;
-            Routing.timeRemaining.replace(key, remaining);
-        }
+        int remaining = Routing.timeRemaining.get(key) - 1;
+        Routing.timeRemaining.replace(key, remaining);
+        
 
-        //***********    Verifica si alguien no ha mandado su keep alive    ***********// 
+        //***********    Verifica si el cuate no ha mandado su keep alive    ***********// 
         checkTimeExceeded();
     }
 
     public void checkTimeExceeded () {
         HashMap<String, Costo> changesToInfinity = new HashMap<>();
-        Set<String> keys = Routing.timeRemaining.keySet();
-        for (String key : keys) {
-            //System.out.println(key + " ---> " + Routing.timeRemaining.get(key));
-            if (Routing.timeRemaining.get(key) == 0) {
-                changesToInfinity.put(key, new Costo(Routing.getIpFromLetter(key), infinity, null));
-            }
+
+        if (Routing.timeRemaining.get(key) == 0) {
+            changesToInfinity.put(key, new Costo(Routing.getIpFromLetter(key), infinity, null));
         }
+
         if (changesToInfinity.size() != 0) {
             try {
                 sendTimeExceededMessage(changesToInfinity);   
             } catch (Exception e) {
-                System.out.println("Ocurrió un error.");
+                ConsoleLog.printError();
             }
         }
     }
 
     public void sendTimeExceededMessage (HashMap<String, Costo> changesToInfinity) throws SocketException {
         Hosts myHost = new Hosts();
-        String vecino;
-        for (int i = 0; i < Routing.vecinos.size(); i++) {
-            vecino = Routing.vecinos.get(i); 
-            Routing.send(Messages.makeDvSend(myHost.getMyAddress(), changesToInfinity), vecino);
-        }
+        routing.send(Messages.makeDvSend(myHost.getMyAddress(), changesToInfinity), null);
     }
 
     
 }
 
 public class MyTimer {
-    public static void init(int timerT, int timerU) {
+    public static void init(int timerT, int timerU, String key) {
  
         Timer timer = new Timer();
          
         // Helper class extends TimerTask
-        TimerTask task = new Helper(timerT, timerU);
+        TimerTask task = new Helper(timerT, timerU, key, null);
          
         timer.schedule(task, 1000, 1000);
  

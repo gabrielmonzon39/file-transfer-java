@@ -7,12 +7,12 @@ public class Log {
     private static final String EXT = ".txt";
     public static final boolean END = true;
 
-    public static void makeLogRouting (String from) {
+    public static void makeLogRouting (String from, String message, boolean action) {
         try {
             File folder = new File(PATH+"Routing");
             folder.mkdir();
             FileWriter writer = new FileWriter(PATH+"Routing"+"/"+"Log"+EXT, true);
-            writer.write(routingMessage(from));
+            writer.write(routingMessage(from, message, action));
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -41,9 +41,9 @@ public class Log {
         return (action) ? "Recibidos" : "Enviados";
     }
 
-    public static String routingMessage (String from) {
-        return begin() + Time.now() + "\tDe: " + from + "\n" + 
-        "Mensaje \"Hello\" recibido." + "\n" + end();
+    public static String routingMessage (String from, String message, boolean action) {
+        return begin() + Time.now() + "\t"+((action) ? "De" : "Para")+": " + from + "\n" + 
+        "Mensaje \""+message+"\" "+((action) ? "recibido" : "enviado")+"." + "\n" + end();
     }
 
     public static String message (String from, String to, String file, int size, int chunk, boolean action) {

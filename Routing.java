@@ -15,10 +15,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.*;  
+import java.util.*;
+
 public class Routing extends Thread {
 
-    //static final int PORT = 9080;
+    // static final int PORT = 9080;
     static final int PORT = 5790;
     static final int infinity = 99;
 
@@ -27,7 +28,7 @@ public class Routing extends Thread {
     static int timerT = defaultT;
     static int timerU = defaultU;
     static String myLetter;
-    
+
     static HashMap<String, Costo> DvReceived;
     static HashMap<String, Costo> changed = new HashMap<>();
     static HashMap<String, Costo> Dv;
@@ -42,22 +43,26 @@ public class Routing extends Thread {
     public static void main(String[] args) throws Exception {
         myLetter = args[0];
 
-        //***********    Leer tiempos T y U    ***********// 
+        // *********** Leer tiempos T y U ***********//
         try {
             timerT = Integer.parseInt(args[1]);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            System.out.println("Error parseando tiempo T");
+        }
         try {
             timerU = Integer.parseInt(args[2]);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            System.out.println("Error parseando tiempo U");
+        }
 
-        //***********    Realizar inicializaciones    ***********// 
+        // *********** Realizar inicializaciones ***********//
         BufferedReader br = new BufferedReader(new FileReader("config.txt"));
         String line = null;
         Dv = new HashMap<String, Costo>();
         hostsWriter = new FileWriter("./hosts.txt", true);
         hostsWriter.write("\n");
-        
-        //***********    Leer el archivo    ***********// 
+
+        // *********** Leer el archivo ***********//
         while ((line = br.readLine()) != null) {
             String[] dir = line.split("-");
 
@@ -69,144 +74,283 @@ public class Routing extends Thread {
 
             vecinos.add(letter);
             timeRemaining.put(letter, timerU);
-            hostsWriter.write(letter+"-"+ip+"\n");
+            hostsWriter.write(letter + "-" + ip + "\n");
         }
         br.close();
         hostsWriter.close();
 
-        //***********    Leemos nuestra dirección    ***********// 
+        // *********** Leemos nuestra dirección ***********//
         myHost = new Hosts();
 
-        //***********    Creamos la primera instancia del archivo    ***********// 
+        // *********** Creamos la primera instancia del archivo ***********//
         writeToFile(Dv);
-        
+
         DatagramSocket ds = new DatagramSocket();
 
-        //***********    Mandamos la tabla    ***********// 
-        /*Set<String> keys = Dv.keySet();
+        // *********** Mandamos la tabla ***********//
+        /*
+         * Set<String> keys = Dv.keySet();
+         * for (String key : keys) {
+         * sendHello(key, myHost);
+         * send(Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
+         * }
+         */
+        Set<String> keys = Dv.keySet();
         for (String key : keys) {
-            sendHello(key, myHost);
-            send(Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
-        }*/
-        Routing routingTable = new Routing();
-        //routingTable.run(null, false);
-        routingTable.socket = null;
-        routingTable.action = false;
-        routingTable.start();
+            Routing routingTable = new Routing();
+            routingTable.socket = null;
+            routingTable.action = false;
+            routingTable.key = key;
+            routingTable.start();
+            routingTable.timer();
+        }
 
         System.out.println("DESPUES DE LO DE INICIALIZACION");
-        
-        //***********    Crea sockets para recibir mensajes    ***********//
-        ServerSocket serverSocket = new ServerSocket(PORT); 
-        //DatagramSocket dr = new DatagramSocket(PORT);
-        //byte[] receive = new byte[65535];
-        MyTimer.init(timerT, timerU);
-        
-        //***********    Esperamos las llamadas    ***********// 
+
+        // *********** Crea sockets para recibir mensajes ***********//
+        ServerSocket serverSocket = new ServerSocket(PORT);
+        // DatagramSocket dr = new DatagramSocket(PORT);
+        // byte[] receive = new byte[65535];
+        //MyTimer.init(timerT, timerU);
+
+        // *********** Esperamos las llamadas ***********//
         DatagramPacket DpReceive = null;
         boolean hasChange = false;
 
-        
         while (true) {
             System.out.println("Esta escuchando");
             Socket socket = serverSocket.accept();
             Routing routing = new Routing();
             routing.socket = socket;
             routing.action = true;
+            routing.key = "";
             System.out.println("Entro, se creo Thread");
-            //routing.run(socket, true); 
+            // routing.run(socket, true);
             routing.start();
         }
     }
 
     Socket socket;
     boolean action;
-    static boolean repeat = false;
+    boolean repeat = false;
+    String key;
+    DatagramPacket DpReceive = null;
+    boolean hasChange = false;
+    DataOutputStream dataOutputStream = null;
+    DataInputStream dataInputStream = null;
 
-    public void run () {
-        if (!action) {
-            //***********    Mandamos la tabla    ***********// 
-            Set<String> keys = Dv.keySet();
-            while (true) {
-                for (String key : keys) {
-                    sendHello(key, myHost);
-                    send(Messages.makeDvSend(myHost.getMyAddress(), Dv),key);
-                }
-                if (!repeat) break;
-            }
-            return;
-        }
-
-        DatagramPacket DpReceive = null;
-        boolean hasChange = false;
-        DataOutputStream dataOutputStream = null;
-        DataInputStream dataInputStream = null;
-
-        while (true) {
-            String request = "";
-
-            try {
-                dataInputStream  = new DataInputStream(socket.getInputStream());
-                dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                request = dataInputStream.readUTF();
-                if (request == null || request.equals("")) {
-                    continue;
-                }
-            } catch (IOException e1) {
-                //continue;
-                ConsoleLog.printError();
-                e1.printStackTrace();
-            }
-            
-            String data = request;
-
-            //System.out.println("**************************" + data + "**************************");
-
-            if (data.toLowerCase().contains("hello")) {
-                sendWelcome(data, myHost);
-            } else if (data.toLowerCase().contains("keepalive") || data.toLowerCase().contains("welcome")) {
-                //System.out.println("ES UN KEEPALIVE O WELCOME");
-                from = data.split("\n")[0].split(":")[1];
-                resetTimeExceeded(from);
-            } else {
-                decode(data);
-                resetTimeExceeded(from);
-            }
-            
-            //***********    Hacemos el algoritmo    ***********// 
-            if (DvReceived == null) continue;
-            Set<String> receiveKeys = DvReceived.keySet();
-            for (String key : receiveKeys) {
-                if (Dv.get(key) == null) {
-                    Dv.put(key, new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
-                    changed.put(key, new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
-                    try {
-                        hostsWriter = new FileWriter("./hosts.txt", true);
-                        hostsWriter.write(key+"-"+Dv.get(from).ip+"\n");
-                        hostsWriter.close();
-                    } catch (IOException e) {
-                        ConsoleLog.printError();
-                    }
-                    hasChange = true;
-                    continue;
-                }
-                if (DvReceived.get(key).costo + Dv.get(from).costo < Dv.get(key).costo) {
-                    hasChange = true;
-                    Dv.replace(key, new Costo(DvReceived.get(key).ip, DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
-                    changed.put(key, new Costo(DvReceived.get(key).ip, DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
-                }
-            }
-            
-            //***********    Escribe en el archivo el nuevo vector    ***********// 
-            if (hasChange) {
-                writeToFile(Dv);
-                hasChange = false;
-            }
-            break;
-        }
+    public void timer () {
+        Timer timer = new Timer();
+         
+        // Helper class extends TimerTask
+        TimerTask task = new Helper(timerT, timerU, key, this);
+         
+        timer.schedule(task, 1000, 1000);
     }
 
-    public static String getIpFromLetter (String hostletter) {
+    public void run() {
+
+        if (!action) {
+            String ip = getIpFromLetter(key);
+            try (Socket socket = new Socket(ip, PORT)) {
+
+                // *********** Mandamos hello y la tabla ***********//
+                int count = 0;
+                while (true) {
+                    try {
+                        dataInputStream = new DataInputStream(socket.getInputStream());
+                        dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                        sendHello(key, myHost);
+                        send(Messages.makeDvSend(myHost.getMyAddress(), Dv), key);
+                        if (!repeat) break;
+                        if (count > 100) break;
+                        count++;
+                    } catch (Exception e) {
+                    }
+                }
+
+                // *********** Nos quedamos escuchando ***********//
+                while (true) {
+                    String request = "";
+                    try {
+                        dataInputStream = new DataInputStream(socket.getInputStream());
+                        dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                        request = dataInputStream.readUTF();
+                        if (request == null || request.equals("")) {
+                            continue;
+                        }
+                    } catch (IOException e1) {
+                        // continue;
+                        ConsoleLog.printError();
+                        e1.printStackTrace();
+                    }
+
+                    String data = request;
+
+                    if (data.toLowerCase().contains("hello")) {
+                        sendWelcome(data, myHost);
+                        // LOG
+                        String letter = data.split("\n")[0].split(":")[1].trim();
+                        ConsoleLog.printRoutingMessage(letter, ConsoleLog.HELLO, ConsoleLog.RECEIVED);
+                        Log.makeLogRouting(letter, ConsoleLog.HELLO, ConsoleLog.RECEIVED);
+
+                    } else if (data.toLowerCase().contains("keepalive") || data.toLowerCase().contains("welcome")) {
+                        from = data.split("\n")[0].split(":")[1];
+                        if (data.toLowerCase().contains("keepalive")) {
+                            // LOG
+                            ConsoleLog.printRoutingMessage(from, ConsoleLog.KEEPALIVE, ConsoleLog.RECEIVED);
+                            Log.makeLogRouting(from, ConsoleLog.KEEPALIVE, ConsoleLog.RECEIVED);
+                        } else {
+                            // LOG
+                            ConsoleLog.printRoutingMessage(from, ConsoleLog.WELCOME, ConsoleLog.RECEIVED);
+                            Log.makeLogRouting(from, ConsoleLog.WELCOME, ConsoleLog.RECEIVED);
+                        }
+                        resetTimeExceeded(from);
+                    } else {
+                        decode(data);
+
+                        // LOG
+                        String letter = data.split("\n")[0].split(":")[1].trim();
+                        ConsoleLog.printRoutingMessage(letter, ConsoleLog.DISTANCEVECTOR, ConsoleLog.RECEIVED);
+                        Log.makeLogRouting(letter, ConsoleLog.DISTANCEVECTOR, ConsoleLog.RECEIVED);
+
+                        resetTimeExceeded(from);
+                    }
+
+                    // *********** Hacemos el algoritmo ***********//
+                    if (DvReceived == null)
+                        continue;
+                    Set<String> receiveKeys = DvReceived.keySet();
+                    for (String key : receiveKeys) {
+                        if (Dv.get(key) == null) {
+                            Dv.put(key,
+                                    new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
+                            changed.put(key,
+                                    new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
+                            try {
+                                hostsWriter = new FileWriter("./hosts.txt", true);
+                                hostsWriter.write(key + "-" + Dv.get(from).ip + "\n");
+                                hostsWriter.close();
+                            } catch (IOException e) {
+                                ConsoleLog.printError();
+                            }
+                            hasChange = true;
+                            continue;
+                        }
+                        if (DvReceived.get(key).costo + Dv.get(from).costo < Dv.get(key).costo) {
+                            hasChange = true;
+                            Dv.replace(key, new Costo(DvReceived.get(key).ip,
+                                    DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
+                            changed.put(key, new Costo(DvReceived.get(key).ip,
+                                    DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
+                        }
+                    }
+
+                    // *********** Escribe en el archivo el nuevo vector ***********//
+                    if (hasChange) {
+                        writeToFile(Dv);
+                        hasChange = false;
+                    }
+                    break;
+                }
+            } catch (UnknownHostException ex) {
+                repeat = true;
+                System.out.println("Server not found: " + ex.getMessage());
+            } catch (IOException ex) {
+                repeat = true;
+                System.out.println("I/O error: " + ex.getMessage());
+            }
+        }
+
+        if (action) {
+            while (true) {
+                String request = "";
+                try {
+                    dataInputStream = new DataInputStream(socket.getInputStream());
+                    dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                    request = dataInputStream.readUTF();
+                    if (request == null || request.equals("")) {
+                        continue;
+                    }
+                } catch (IOException e1) {
+                    // continue;
+                    ConsoleLog.printError();
+                    e1.printStackTrace();
+                }
+
+                String data = request;
+
+                if (data.toLowerCase().contains("hello")) {
+                    sendWelcome(data, myHost);
+                    // LOG
+                    String letter = data.split("\n")[0].split(":")[1].trim();
+                    ConsoleLog.printRoutingMessage(letter, ConsoleLog.HELLO, ConsoleLog.RECEIVED);
+                    Log.makeLogRouting(letter, ConsoleLog.HELLO, ConsoleLog.RECEIVED);
+
+                } else if (data.toLowerCase().contains("keepalive") || data.toLowerCase().contains("welcome")) {
+                    from = data.split("\n")[0].split(":")[1];
+                    if (data.toLowerCase().contains("keepalive")) {
+                        // LOG
+                        ConsoleLog.printRoutingMessage(from, ConsoleLog.KEEPALIVE, ConsoleLog.RECEIVED);
+                        Log.makeLogRouting(from, ConsoleLog.KEEPALIVE, ConsoleLog.RECEIVED);
+                    } else {
+                        // LOG
+                        ConsoleLog.printRoutingMessage(from, ConsoleLog.WELCOME, ConsoleLog.RECEIVED);
+                        Log.makeLogRouting(from, ConsoleLog.WELCOME, ConsoleLog.RECEIVED);
+                    }
+                    resetTimeExceeded(from);
+                } else {
+                    decode(data);
+
+                    // LOG
+                    String letter = data.split("\n")[0].split(":")[1].trim();
+                    ConsoleLog.printRoutingMessage(letter, ConsoleLog.DISTANCEVECTOR, ConsoleLog.RECEIVED);
+                    Log.makeLogRouting(letter, ConsoleLog.DISTANCEVECTOR, ConsoleLog.RECEIVED);
+
+                    resetTimeExceeded(from);
+                }
+
+                // *********** Hacemos el algoritmo ***********//
+                if (DvReceived == null)
+                    continue;
+                Set<String> receiveKeys = DvReceived.keySet();
+                for (String key : receiveKeys) {
+                    if (Dv.get(key) == null) {
+                        Dv.put(key,
+                                new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
+                        changed.put(key,
+                                new Costo(Dv.get(from).ip, Dv.get(from).costo + DvReceived.get(key).costo, from));
+                        try {
+                            hostsWriter = new FileWriter("./hosts.txt", true);
+                            hostsWriter.write(key + "-" + Dv.get(from).ip + "\n");
+                            hostsWriter.close();
+                        } catch (IOException e) {
+                            ConsoleLog.printError();
+                        }
+                        hasChange = true;
+                        continue;
+                    }
+                    if (DvReceived.get(key).costo + Dv.get(from).costo < Dv.get(key).costo) {
+                        hasChange = true;
+                        Dv.replace(key, new Costo(DvReceived.get(key).ip,
+                                DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
+                        changed.put(key, new Costo(DvReceived.get(key).ip,
+                                DvReceived.get(key).costo + Dv.get(from).costo, DvReceived.get(key).link));
+                    }
+                }
+
+                // *********** Escribe en el archivo el nuevo vector ***********//
+                if (hasChange) {
+                    writeToFile(Dv);
+                    hasChange = false;
+                }
+                break;
+            }
+        }
+
+    }
+
+    public static String getIpFromLetter(String hostletter) {
         try (BufferedReader br = new BufferedReader(new FileReader("config.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -217,28 +361,35 @@ public class Routing extends Thread {
                 }
             }
             br.close();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return null;
     }
 
-    public static void resetTimeExceeded (String vecino) {
+    public static void resetTimeExceeded(String vecino) {
         timeRemaining.replace(vecino, timerU);
     }
- 
-    public static void sendTimeoutMessage () throws SocketException {
-        DatagramSocket ds = new DatagramSocket();
+
+    public void sendTimeoutMessage() throws SocketException {
         Hosts myHost = new Hosts();
-        for (String vecino : vecinos) {
-            if (changed.size() == 0) {
-                send(Messages.makeKeepAlive(myHost.getMyAddress()), vecino);
-            } else {
-                send(Messages.makeDvSend(myHost.getMyAddress(), changed), vecino);
-            }
-        }  
+        if (changed.size() == 0) {
+
+            // LOG
+            ConsoleLog.printRoutingMessage(key, ConsoleLog.KEEPALIVE, ConsoleLog.SENT);
+            Log.makeLogRouting(key, ConsoleLog.KEEPALIVE, ConsoleLog.SENT);
+
+            send(Messages.makeKeepAlive(myHost.getMyAddress()), null);
+        } else {
+            // LOG
+            ConsoleLog.printRoutingMessage(key, ConsoleLog.DISTANCEVECTOR, ConsoleLog.SENT);
+            Log.makeLogRouting(key, ConsoleLog.DISTANCEVECTOR, ConsoleLog.SENT);
+
+            send(Messages.makeDvSend(myHost.getMyAddress(), changed), null);
+        }
         changed = new HashMap<>();
     }
 
-    public static void writeToFile (HashMap<String, Costo> Dv) {
+    public static void writeToFile(HashMap<String, Costo> Dv) {
         String outputFilePath = "./RoutingTable.txt";
         File file = new File(outputFilePath);
 
@@ -247,9 +398,11 @@ public class Routing extends Thread {
         }
         try {
             FileWriter writer = new FileWriter(outputFilePath, true);
+            writer.write(myHost.getMyAddress() + ";" + 0 + ";" + myHost.getMyAddress() + "\n");
             Set<String> keys = Dv.keySet();
             for (String key : keys) {
-                writer.write(key + ";" + Dv.get(key).costo + ";" + Dv.get(key).link + "\n");
+                if (!key.equals(myHost.getMyAddress()))
+                    writer.write(key + ";" + Dv.get(key).costo + ";" + Dv.get(key).link + "\n");
             }
             writer.close();
         } catch (Exception e) {
@@ -257,26 +410,27 @@ public class Routing extends Thread {
         }
     }
 
-    public static void decode (String data) {
-        //System.out.println("---------" + data + "---------");
+    public static void decode(String data) {
+        // System.out.println("---------" + data + "---------");
         String[] dataDecoded = data.split("\n");
-        //System.out.println(dataDecoded[0]);
+        // System.out.println(dataDecoded[0]);
         from = dataDecoded[0].split(":")[1].trim();
         int size = Integer.parseInt(dataDecoded[2].split(":")[1].trim());
         DvReceived = new HashMap<>();
 
         int offset = 3;
         for (int i = 0; i < size; i++) {
-            String[] entry = dataDecoded[i+offset].split(":");
+            String[] entry = dataDecoded[i + offset].split(":");
             String hostLetter = entry[0].trim();
             DvReceived.put(hostLetter, new Costo(getIpFromLetter(hostLetter), Integer.parseInt(entry[1].trim()), null));
         }
     }
 
     public static StringBuilder data(byte[] a) {
-        if (a == null) return null;
+        if (a == null)
+            return null;
         StringBuilder ret = new StringBuilder();
-        
+
         for (int i = 0; i < a.length; i++) {
             if (a[i] != 0) {
                 ret.append((char) a[i]);
@@ -285,47 +439,42 @@ public class Routing extends Thread {
         return ret;
     }
 
-    static void send(String dv, String letter)  {
-        String ip = getIpFromLetter(letter);
-        System.out.println("SEND TO -> " + letter + " (" + ip + ")" + " ----->\n" + dv);
-        try (Socket socket = new Socket(ip, PORT)) {
- 
-            DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-            DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
- 
+    void send (String dv, String letter) {
+        try {
             dataOutputStream.writeUTF(dv);
             dataOutputStream.flush();
 
-            //System.out.println(dv);
+            // LOG
+            ConsoleLog.printRoutingMessage(key, ConsoleLog.DISTANCEVECTOR, ConsoleLog.SENT);
+            Log.makeLogRouting(key, ConsoleLog.DISTANCEVECTOR, ConsoleLog.SENT);
 
-            //dataInputStream.close();
-            //dataOutputStream.close();
-
-            //socket.close();
-        } catch (UnknownHostException ex) {
+        } catch (Exception e) {
             repeat = true;
-            System.out.println("Server not found: " + ex.getMessage());
-        } catch (IOException ex) {
-            repeat = true;
-            System.out.println("I/O error: " + ex.getMessage());
+            e.printStackTrace();
+            System.out.println("No se logro enviar");
         }
     }
 
-    static void sendHello(String Ip, Hosts host)  {
+    void sendHello(String Ip, Hosts host) {
         String message = Messages.makeInitialMessage(host.getMyAddress());
+
+        // LOG
+        ConsoleLog.printRoutingMessage(key, ConsoleLog.HELLO, ConsoleLog.SENT);
+        Log.makeLogRouting(key, ConsoleLog.HELLO, ConsoleLog.SENT);
+
         send(message, Ip);
     }
 
-    static void sendWelcome(String data, Hosts host)  {
-        String Ip = data.split("\n")[0].split(":")[1].trim();
+    void sendWelcome(String data, Hosts host) {
+        String letter = data.split("\n")[0].split(":")[1].trim();
         String message = Messages.ResponseInitialMessage(host.getMyAddress());
-        
-        // LOG
-        ConsoleLog.printRoutingMessage(Ip);
-        Log.makeLogRouting(Ip);
 
-        send(message, Ip);
-        send(Messages.makeDvSend(myHost.getMyAddress(), Dv),Ip);
+        // LOG
+        ConsoleLog.printRoutingMessage(key, ConsoleLog.WELCOME, ConsoleLog.SENT);
+        Log.makeLogRouting(key, ConsoleLog.WELCOME, ConsoleLog.SENT);
+
+        send(message, letter);
+        send(Messages.makeDvSend(myHost.getMyAddress(), Dv), letter);
     }
 
 }

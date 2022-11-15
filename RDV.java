@@ -71,7 +71,9 @@ public class RDV extends Thread {
 
             vecinos.add(letter);
             timeRemaining.put(letter, timerU);
-            hostsWriter.write(letter+"-"+ip+"\n");
+            if (!letter.equals(myHost.getMyAddress())) {
+                hostsWriter.write(letter+"-"+ip+"\n");
+            }
         }
         br.close();
         hostsWriter.close();
@@ -102,7 +104,7 @@ public class RDV extends Thread {
         ServerSocket serverSocket = new ServerSocket(PORT); 
         //DatagramSocket dr = new DatagramSocket(PORT);
         //byte[] receive = new byte[65535];
-        MyTimer.init(timerT, timerU);
+        //MyTimer.init(timerT, timerU);
         
         //***********    Esperamos las llamadas    ***********// 
         DatagramPacket DpReceive = null;
@@ -412,8 +414,8 @@ public class RDV extends Thread {
         String message = Messages.ResponseInitialMessage(host.getMyAddress());
         
         // LOG
-        ConsoleLog.printRoutingMessage(Ip);
-        Log.makeLogRouting(Ip);
+        //ConsoleLog.printRoutingMessage(Ip);
+        //Log.makeLogRouting(Ip);
 
         send(message, Ip);
         send(Messages.makeDvSend(myHost.getMyAddress(), Dv),Ip);
