@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.EOFException;
 
 public class FowardingServer extends Thread {
@@ -27,14 +29,16 @@ public class FowardingServer extends Thread {
     private Socket newClient;
     private String myHost;
 
-   /* public FowardingServer(Socket newClient, String myHost){
+    public FowardingServer(Socket newClient, String myHost){
         this.newClient = newClient;
         this.myHost = myHost;
-    }*/
+    }
 
     //@Override
     public void run(){
         try {
+            //dataInputStream = new DataInputStream(this.newClient.getInputStream());
+            //dataOutputStream = new DataOutputStream(this.newClient.getOutputStream());
             while(true){
                 dataInputStream = new DataInputStream(newClient.getInputStream());
                 dataOutputStream = new DataOutputStream(newClient.getOutputStream());
@@ -42,7 +46,12 @@ public class FowardingServer extends Thread {
                 //Leer tabla de ruteo
                 readTable();
                 //// OBTENER LA REQUEST
-                String request = dataInputStream.readUTF();
+                String request;
+                //try {
+                    request = dataInputStream.readUTF();
+                //} catch (EOFException e) {
+                  //  continue;
+                //}
                 System.out.println(request);
                 //System.out.println(myHost);
 
@@ -106,7 +115,9 @@ public class FowardingServer extends Thread {
 
     public static void doFileRequest (String request, HashMap<String, String> requestDecoded, String local) {
         System.out.println("Es transferencia de archivos.");
-         String prueba;
+        String prueba;
+        String Size;
+        Pattern verifi = Pattern.compile("[a-z][A-Z]*:[0-9]");
 
         //Envio a Receiver
         try(
@@ -116,9 +127,14 @@ public class FowardingServer extends Thread {
 
             dataOutputStream.writeUTF(request);
             System.out.println("Archivo entregado a: " + local);
-            System.out.println(requestDecoded);
-            String Size = requestDecoded.get("Size");
-            System.out.println(requestDecoded.get("Size"));
+            
+            Matcher m = verifi.matcher(requestDecoded.get("Size"));
+            if(m.find()){
+                Size = requestDecoded.get("Size").split(":")[1].trim();
+            }else{
+                Size = requestDecoded.get("Size");
+            }
+            
             noChunks = (Integer.parseInt(Size)%((long)CHUNKSIZE)==0L) ? Integer.parseInt(Size)/((long)CHUNKSIZE) : Integer.parseInt(Size)/((long)CHUNKSIZE)+1;
             for(int i = 0; i<(int)noChunks; i++){
                 prueba = dataInputStream.readUTF();
@@ -155,7 +171,7 @@ public class FowardingServer extends Thread {
 
     public static void doRedirect (String request, HashMap<String, String> requestDecoded) {
         String toHost = table.get(requestDecoded.get("To")).link;
-        System.out.println("Es redirección " + toHost);
+        System.out.println("Es redireccion " + toHost);
         Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, request);
         //System.out.println(toHost);
         sender.send();
@@ -165,9 +181,9 @@ public class FowardingServer extends Thread {
     public static void doRedirect2 (String response, String to) {
         System.out.println(to);
         String toHost = table.get(to).link;
-        System.out.println("Es redirección " + toHost);
+        System.out.println("Es redireccion " + toHost);
         Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, response);
-        System.out.println(toHost);
+        //System.out.println(toHost+"ERR");
 
         /*try {
             dataOutputStream.writeUTF(response);
@@ -236,18 +252,18 @@ public class FowardingServer extends Thread {
 
             while(true){
                 Socket client =  server.accept(); 
-                System.out.println("Nuevo cliente conectado: " + client.getInetAddress().getHostAddress()); 
+                System.out.println("Cliente : " + client.getInetAddress().getHostAddress()); 
                  
-                FowardingServer clientSock = new FowardingServer(); 
+                /*FowardingServer clientSock = new FowardingServer(); 
                 clientSock.myHost = myHost; 
                 clientSock.newClient = client; 
                 clientSock.start();
-
-                /*Socket client =  server.accept();
-                System.out.println("Nuevo cliente conectado: " + client.getInetAddress().getHostAddress());
+                System.out.println("XD");*/
+                //Socket client =  server.accept();
+                //System.out.println("Nuevo cliente conectado: " + client.getInetAddress().getHostAddress());
                 
                 FowardingServer clientSock = new FowardingServer(client, myHost);
-                new Thread(clientSock).start();*/
+                new Thread(clientSock).start();
             }
         }catch(Exception e) {
             e.printStackTrace();
@@ -255,6 +271,7 @@ public class FowardingServer extends Thread {
         finally {
             if (server != null) {
                 try {
+                    System.out.println("Murio");
                     server.close();
                 }
                 catch (Exception e) {

@@ -59,21 +59,24 @@ public class App_Server {
                 }else{
                     paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
                 }
-                System.out.println(paramsDecoded[i]);
+                System.out.println(paramsDecoded.length);
             }
             return paramsDecoded;    
         }else{
             String[] paramsDecoded = new String[7];
             paramsDecoded =  paramsEncoded.split("\n");
             for (int i = 0; i < paramsDecoded.length; i++) {
-                paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
-                System.out.println();
+                if(i == paramsDecoded.length-1){
+                    break;
+                }else{
+                    paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
+                }
             }
             try(Socket socket = new Socket("localhost", PORT_R)) {
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
     
-                dataOutputStream.writeUTF(paramsEncoded);
+                dataOutputStream.writeUTF(paramsEncoded.split("\nEOF")[0]);
                 System.out.println(separator);
                 System.out.println();
                 

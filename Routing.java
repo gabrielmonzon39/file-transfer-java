@@ -18,7 +18,8 @@ import java.net.UnknownHostException;
 import java.util.*;  
 public class Routing extends Thread {
 
-    static final int PORT = 9080;
+    //static final int PORT = 9080;
+    static final int PORT = 5790;
     static final int infinity = 99;
 
     static final int defaultT = 30; // 30

@@ -60,6 +60,7 @@ public class Receiver {
         
         String[] responseDecoded = new String[RESPONSEFIELDQUANTITY];
         String responseEncoded = dataInputStream.readUTF();
+        System.out.println(responseEncoded);
         int from = responseEncoded.indexOf("From: ");
         int to = responseEncoded.indexOf("To: ");
         int name = responseEncoded.indexOf("Name: ");
