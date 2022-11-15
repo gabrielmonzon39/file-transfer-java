@@ -49,7 +49,7 @@ public class FowardingServer_Receiver extends Thread {
                 //dataOutputStream.close();
             }            
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         finally{ 
@@ -63,7 +63,7 @@ public class FowardingServer_Receiver extends Thread {
                     } 
                 } 
                 catch (Exception e) { 
-                    e.printStackTrace(); 
+                    //e.printStackTrace(); 
                 } 
             }
     }
@@ -80,7 +80,7 @@ public class FowardingServer_Receiver extends Thread {
             }  
             scanLine.close(); 
         } catch(IOException e) {  
-            e.printStackTrace();  
+            //e.printStackTrace();  
         }
     }
 
@@ -105,7 +105,7 @@ public class FowardingServer_Receiver extends Thread {
             //dataOutputStream.close();
             socket.close();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -151,7 +151,7 @@ public class FowardingServer_Receiver extends Thread {
                 new Thread(clientSock).start();
             }
         }catch(Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             if (server != null) {
@@ -159,7 +159,7 @@ public class FowardingServer_Receiver extends Thread {
                     server.close();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         }
@@ -190,7 +190,7 @@ public class FowardingServer_Receiver extends Thread {
             }
             //clientSocket.close();
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         
     }

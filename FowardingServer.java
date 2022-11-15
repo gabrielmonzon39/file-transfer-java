@@ -52,7 +52,7 @@ public class FowardingServer extends Thread {
                 //} catch (EOFException e) {
                   //  continue;
                 //}
-                System.out.println(request);
+                //System.out.println(request);
                 //System.out.println(myHost);
 
                 //// DECODIFICAR LA REQUEST
@@ -67,7 +67,7 @@ public class FowardingServer extends Thread {
         } catch (EOFException e) {
             
         } catch( Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         } 
         
         finally{ 
@@ -81,7 +81,7 @@ public class FowardingServer extends Thread {
                 } 
             } 
             catch (Exception e) { 
-                e.printStackTrace(); 
+                //e.printStackTrace(); 
             } 
         }
     }
@@ -100,7 +100,7 @@ public class FowardingServer extends Thread {
             }  
             scanLine.close(); 
         } catch(IOException e) {  
-            e.printStackTrace();  
+            //e.printStackTrace();  
         }
     }
 
@@ -114,7 +114,7 @@ public class FowardingServer extends Thread {
     }
 
     public static void doFileRequest (String request, HashMap<String, String> requestDecoded, String local) {
-        System.out.println("Es transferencia de archivos.");
+        //System.out.println("Es transferencia de archivos.");
         String prueba;
         String Size;
         Pattern verifi = Pattern.compile("[a-z][A-Z]*:[0-9]");
@@ -126,7 +126,7 @@ public class FowardingServer extends Thread {
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
             dataOutputStream.writeUTF(request);
-            System.out.println("Archivo entregado a: " + local);
+            //System.out.println("Archivo entregado a: " + local);
             
             Matcher m = verifi.matcher(requestDecoded.get("Size"));
             if(m.find()){
@@ -140,8 +140,8 @@ public class FowardingServer extends Thread {
                 prueba = dataInputStream.readUTF();
                 doRedirect2(prueba,requestDecoded.get("From"));
 
-                System.out.println(separator);
-                System.out.println();
+                //System.out.println(separator);
+                //System.out.println();
             }
             
             //dataInputStream.close();
@@ -151,7 +151,7 @@ public class FowardingServer extends Thread {
         catch (EOFException e) {
             
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
      
         finally{
@@ -164,24 +164,24 @@ public class FowardingServer extends Thread {
                 }
             }
             catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
 
     public static void doRedirect (String request, HashMap<String, String> requestDecoded) {
         String toHost = table.get(requestDecoded.get("To")).link;
-        System.out.println("Es redireccion " + toHost);
+        //System.out.println("Es redireccion " + toHost);
         Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, request);
         //System.out.println(toHost);
         sender.send();
-        System.out.println("Mensaje reenviado a: " + toHost);
+        //System.out.println("Mensaje reenviado a: " + toHost);
     }
 
     public static void doRedirect2 (String response, String to) {
-        System.out.println(to);
+        //System.out.println(to);
         String toHost = table.get(to).link;
-        System.out.println("Es redireccion " + toHost);
+        //System.out.println("Es redireccion " + toHost);
         Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, response);
         //System.out.println(toHost+"ERR");
 
@@ -189,11 +189,11 @@ public class FowardingServer extends Thread {
             dataOutputStream.writeUTF(response);
             dataOutputStream.flush();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }*/
        
         sender.send();
-        System.out.println("Mensaje reenviado a: " + toHost);
+        //System.out.println("Mensaje reenviado a: " + toHost);
     }
     
     public static HashMap<String, String> decodeRequest (String request) throws Exception {
@@ -237,9 +237,10 @@ public class FowardingServer extends Thread {
     public static void main(String[] args) {
         ServerSocket server = null;
         //// INIT
+        ConsoleLog.printBegin();
         System.out.println("Fowarding");
         System.out.println("Escuchando en puerto: " + PORT_FORWARDING);
-        System.out.println(separator);
+        ConsoleLog.printEnd();
         //readTable();
             
         //// OBTENER MI DIRECCIÓN
@@ -252,7 +253,7 @@ public class FowardingServer extends Thread {
 
             while(true){
                 Socket client =  server.accept(); 
-                System.out.println("Cliente : " + client.getInetAddress().getHostAddress()); 
+                //System.out.println("Cliente : " + client.getInetAddress().getHostAddress()); 
                  
                 /*FowardingServer clientSock = new FowardingServer(); 
                 clientSock.myHost = myHost; 
@@ -266,16 +267,16 @@ public class FowardingServer extends Thread {
                 new Thread(clientSock).start();
             }
         }catch(Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             if (server != null) {
                 try {
-                    System.out.println("Murio");
+                    //System.out.println("Murio");
                     server.close();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         }
@@ -306,7 +307,7 @@ public class FowardingServer extends Thread {
             }
             //clientSocket.close();
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }*/
         
     }

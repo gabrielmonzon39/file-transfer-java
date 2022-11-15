@@ -26,7 +26,7 @@ class Helper extends TimerTask {
             try {
                 routing.sendTimeoutMessage();
             } catch (SocketException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             i = 0;
         }

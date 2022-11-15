@@ -28,7 +28,7 @@ public class Server {
                 new Thread(clientSock).start();
             }
         }catch(Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             if (server != null) {
@@ -36,7 +36,7 @@ public class Server {
                     server.close();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         }
@@ -67,7 +67,7 @@ public class Server {
                     input = bufferedReader.readLine();
                 }
             }catch(Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             finally{
                 try {
@@ -80,7 +80,7 @@ public class Server {
                     }
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         }

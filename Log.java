@@ -15,7 +15,7 @@ public class Log {
             writer.write(routingMessage(from, message, action));
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             ConsoleLog.printError();
         }
     }
@@ -32,7 +32,7 @@ public class Log {
             }
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             ConsoleLog.printError();
         }
     }

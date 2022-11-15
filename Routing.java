@@ -47,12 +47,12 @@ public class Routing extends Thread {
         try {
             timerT = Integer.parseInt(args[1]);
         } catch (Exception e) {
-            System.out.println("Error parseando tiempo T");
+            //System.out.println("Error parseando tiempo T");
         }
         try {
             timerU = Integer.parseInt(args[2]);
         } catch (Exception e) {
-            System.out.println("Error parseando tiempo U");
+            //System.out.println("Error parseando tiempo U");
         }
 
         // *********** Realizar inicializaciones ***********//
@@ -105,7 +105,7 @@ public class Routing extends Thread {
             routingTable.timer();
         }
 
-        System.out.println("DESPUES DE LO DE INICIALIZACION");
+        //System.out.println("DESPUES DE LO DE INICIALIZACION");
 
         // *********** Crea sockets para recibir mensajes ***********//
         ServerSocket serverSocket = new ServerSocket(PORT);
@@ -118,13 +118,13 @@ public class Routing extends Thread {
         boolean hasChange = false;
 
         while (true) {
-            System.out.println("Esta escuchando");
+            //System.out.println("Esta escuchando");
             Socket socket = serverSocket.accept();
             Routing routing = new Routing();
             routing.socket = socket;
             routing.action = true;
             routing.key = "";
-            System.out.println("Entro, se creo Thread");
+            //System.out.println("Entro, se creo Thread");
             // routing.run(socket, true);
             routing.start();
         }
@@ -255,10 +255,10 @@ public class Routing extends Thread {
                 }
             } catch (UnknownHostException ex) {
                 repeat = true;
-                System.out.println("Server not found: " + ex.getMessage());
+                //System.out.println("Server not found: " + ex.getMessage());
             } catch (IOException ex) {
                 repeat = true;
-                System.out.println("I/O error: " + ex.getMessage());
+                //System.out.println("I/O error: " + ex.getMessage());
             }
         }
 
@@ -406,7 +406,7 @@ public class Routing extends Thread {
             }
             writer.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -450,8 +450,8 @@ public class Routing extends Thread {
 
         } catch (Exception e) {
             repeat = true;
-            e.printStackTrace();
-            System.out.println("No se logro enviar");
+            ////e.printStackTrace();
+            //System.out.println("No se logro enviar");
         }
     }
 

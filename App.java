@@ -49,7 +49,7 @@ public class App {
                 
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally{
             try {
@@ -61,7 +61,7 @@ public class App {
                 }
             }
             catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }*/
@@ -70,18 +70,18 @@ public class App {
         Scanner sc = new Scanner(System.in);
         Hosts hosts = new Hosts();
         String myHost = hosts.getMyAddress();
-        System.out.println("Ingrese IP: ");
+        System.out.print("Ingrese IP: ");
         String ip = sc.nextLine();
         try(Socket socket = new Socket(ip, 9081)) {
             while(true){ 
                 // Realizar Peticion  
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                System.out.println("Ingrese el destino: ");
+                System.out.print("Ingrese el destino: ");
                 String To = sc.nextLine();
-                System.out.println("Ingrese nombre del archivo: ");
+                System.out.print("Ingrese nombre del archivo: ");
                 String Name = sc.nextLine();
-                System.out.println("Ingrese tamaño del archivo: ");
+                System.out.print("Ingrese tamaño del archivo: ");
                 String size = sc.nextLine();
                 dataOutputStream.writeUTF("From:" + myHost + "\n"+"To:"+To+"\nName:"+Name+"\nSize:"+size+ "\nEOF");
 
@@ -93,7 +93,7 @@ public class App {
                 }*/
             }
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally{
                 try {
@@ -105,7 +105,7 @@ public class App {
                     }
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
     }//*/
@@ -125,7 +125,7 @@ public class App {
               clientSocket.close();
             }
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 

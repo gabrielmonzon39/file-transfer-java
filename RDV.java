@@ -123,7 +123,7 @@ public class RDV extends Thread {
                 routing.start();
             }
         }catch(Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             if (serverSocket != null) {
@@ -131,7 +131,7 @@ public class RDV extends Thread {
                     serverSocket.close();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         }
@@ -232,7 +232,7 @@ public class RDV extends Thread {
                 } 
             } 
             catch (Exception e) { 
-                e.printStackTrace(); 
+                //e.printStackTrace(); 
             } 
         }
         /*while (true) {
@@ -346,7 +346,7 @@ public class RDV extends Thread {
             }
             writer.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
