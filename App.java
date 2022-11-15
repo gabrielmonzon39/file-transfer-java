@@ -72,7 +72,7 @@ public class App {
         String myHost = hosts.getMyAddress();
         System.out.println("Ingrese IP: ");
         String ip = sc.nextLine();
-        try(Socket socket = new Socket(ip, 9081)) {
+        try(Socket socket = new Socket(ip, 4500)) {
             while(true){ 
                 // Realizar Peticion  
                 dataInputStream = new DataInputStream(socket.getInputStream());

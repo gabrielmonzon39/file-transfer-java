@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import java.io.EOFException;
 
 public class FowardingServer extends Thread {
-    private static final int PORT_FORWARDING = 9081;
+    private static final int PORT_FORWARDING = 4500;
     private static final int PORT_APP = 6666;
     private static final int PORT_RECEIVER = 5000;
     private static final int CHUNKSIZE = 1460;
@@ -23,6 +23,9 @@ public class FowardingServer extends Thread {
     private static DataOutputStream dataOutputStream = null;
     public static final String separator = "--------------------------------------------------------------------";
     private static DataInputStream dataInputStream = null;
+    private static DataOutputStream dataOutputStream2 = null;
+    private static DataInputStream dataInputStream2 = null;
+    private static DataOutputStream out = null;
     private static long noChunks;
 
     static HashMap<String, Costo> table;
@@ -135,13 +138,22 @@ public class FowardingServer extends Thread {
                 Size = requestDecoded.get("Size");
             }
             
-            noChunks = (Integer.parseInt(Size)%((long)CHUNKSIZE)==0L) ? Integer.parseInt(Size)/((long)CHUNKSIZE) : Integer.parseInt(Size)/((long)CHUNKSIZE)+1;
-            for(int i = 0; i<(int)noChunks; i++){
-                prueba = dataInputStream.readUTF();
-                doRedirect2(prueba,requestDecoded.get("From"));
+            if(requestDecoded.get("Data") == null){
+                noChunks = (Integer.parseInt(Size)%((long)CHUNKSIZE)==0L) ? Integer.parseInt(Size)/((long)CHUNKSIZE) : Integer.parseInt(Size)/((long)CHUNKSIZE)+1;
+                String From = requestDecoded.get("From"); // Extraer letra destino
+                String To = table.get(From).link; // Extraer letra por cual enviar para llegar al destino
+                System.out.println(To + " " + Routing.getIpFromLetter(To));
+                Socket response = new Socket(Routing.getIpFromLetter(To), PORT_FORWARDING);
+                out = new DataOutputStream(response.getOutputStream()); // Socket para enviar los chuncks
+                for(int i = 0; i<(int)noChunks; i++){
+                    prueba = dataInputStream.readUTF();
+                    doRedirect2(prueba,requestDecoded.get("From"), out);
 
-                System.out.println(separator);
-                System.out.println();
+                    System.out.println(separator);
+                    System.out.println();
+                }
+                out.close();
+                response.close();
             }
             
             //dataInputStream.close();
@@ -172,18 +184,76 @@ public class FowardingServer extends Thread {
     public static void doRedirect (String request, HashMap<String, String> requestDecoded) {
         String toHost = table.get(requestDecoded.get("To")).link;
         System.out.println("Es redireccion " + toHost);
-        Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, request);
+        String local = requestDecoded.get("From");
+        //Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, request);
         //System.out.println(toHost);
-        sender.send();
-        System.out.println("Mensaje reenviado a: " + toHost);
+        try(Socket socket = new Socket(Routing.getIpFromLetter(toHost), PORT_FORWARDING)) {
+            dataInputStream = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
+            
+            // MANDAR MENSAJE
+            dataOutputStream.writeUTF(request);
+            dataOutputStream.flush();
+            System.out.println("Mensaje reenviado a: " + toHost);
+            int finish = Integer.parseInt(requestDecoded.get("Size"));
+            noChunks = (finish%((long)CHUNKSIZE)==0L) ? finish/((long)CHUNKSIZE) : finish/((long)CHUNKSIZE)+1;
+            int cont = 0;
+            String file;
+            String[] recibidos = new String[(int)noChunks];
+            System.out.println(finish+noChunks);
+            while(cont < (int)noChunks){
+                try {
+                    file = dataInputStream.readUTF();
+                } catch (EOFException e) {
+                    continue;
+                }
+                recibidos[cont] = file;
+                System.out.println(recibidos);
+                /*try(
+                    Socket socketTo = new Socket("localhost", PORT_APP)) {
+                    dataInputStream2 = new DataInputStream(socketTo.getInputStream());
+                    dataOutputStream2 = new DataOutputStream(socketTo.getOutputStream());
+                    if(file != null){
+                        dataOutputStream2.writeUTF(file);
+                        System.out.println("Chunck entregado a: " + local);
+                    }
+                }
+                catch (EOFException e) {
+                    
+                } catch (Exception e){
+                    e.printStackTrace();
+                }*/
+            }
+
+            dataInputStream.close();
+            dataOutputStream.close();
+            socket.close();
+            
+            try(Socket socketTo = new Socket("localhost", PORT_APP)) {
+                dataInputStream = new DataInputStream(socketTo.getInputStream());
+                dataOutputStream = new DataOutputStream(socketTo.getOutputStream());
+
+                for(int i = 0; i<recibidos.length; i++){
+                    dataOutputStream.writeUTF(request);
+                }
+                System.out.println("Archivo entregado a: " + local);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        System.out.println(requestDecoded);
+        //sender.send();
+        //System.out.println("Mensaje reenviado a: " + toHost);
     }
 
-    public static void doRedirect2 (String response, String to) {
-        System.out.println(to);
+    public static void doRedirect2 (String response, String to, DataOutputStream out) throws IOException {
+        //System.out.println(to);
         String toHost = table.get(to).link;
-        System.out.println("Es redireccion " + toHost);
+        System.out.println("Es redireccion hacia: " + toHost);
+        out.writeUTF(response);
+        /*System.out.println("Es redireccion " + toHost);
         Sender sender = new Sender(Routing.getIpFromLetter(toHost), PORT_FORWARDING, response);
-        //System.out.println(toHost+"ERR");
+        System.out.println(toHost+"ERR");
 
         /*try {
             dataOutputStream.writeUTF(response);
@@ -192,7 +262,7 @@ public class FowardingServer extends Thread {
             e.printStackTrace();
         }*/
        
-        sender.send();
+        //sender.send();
         System.out.println("Mensaje reenviado a: " + toHost);
     }
     
