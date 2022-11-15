@@ -43,13 +43,18 @@ public class App_Server {
               clientSocket.close();
             }
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 // Obtener los Datos del Mensaje Recibido
     public static String[] decodeRequest () throws Exception {
         String paramsEncoded = dataInputStream.readUTF();
+
+        // LOG
+        ConsoleLog.printBegin();
         System.out.println(paramsEncoded);
+        ConsoleLog.printEnd();
+
         if(paramsEncoded.split("\n").length == 5){
             String[] paramsDecoded = new String[REQUESTFIELDQUANTITY];
             paramsDecoded =  paramsEncoded.split("\n");
@@ -59,7 +64,7 @@ public class App_Server {
                 }else{
                     paramsDecoded[i] = paramsDecoded[i].split(":")[1].trim();
                 }
-                System.out.println(paramsDecoded.length);
+                //System.out.println(paramsDecoded.length);
             }
             return paramsDecoded;    
         }else{
@@ -77,18 +82,18 @@ public class App_Server {
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
     
                 dataOutputStream.writeUTF(paramsEncoded.split("\nEOF")[0]);
-                System.out.println(separator);
-                System.out.println();
+                //System.out.println(separator);
+                //System.out.println();
                 
                 if(!paramsDecoded[2].contains(".txt")){
-                    System.out.println(paramsDecoded[2]);
+                    //System.out.println(paramsDecoded[2]);
                     
                     dataInputStream.close();
                     dataOutputStream.close();
                     
                 }
             }catch (Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
             }
           /* finally{ 
             try { 
@@ -101,7 +106,7 @@ public class App_Server {
                 } 
             } 
             catch (Exception e) { 
-                e.printStackTrace(); 
+                //e.printStackTrace(); 
             } 
         }*/
             return paramsDecoded;
@@ -126,7 +131,7 @@ public class App_Server {
             FileInputStream fileInputStream = new FileInputStream(file);
             int length = (int) file.length();
             int sizeAux = length-((int)noChunks-1)*CHUNKSIZE;
-            System.out.println(sizeAux);
+            //System.out.println(sizeAux);
             // break file into chunks
             byte[] buffer;
             for (int i = 0; i < (int)noChunks; i++) {
@@ -149,7 +154,12 @@ public class App_Server {
             for (int i = 0; i < (int)noChunks; i++) {
                 //System.out.println(chunks[i]);
                 dataOutputStream.writeUTF(Messages.makeResponse(from, to, name, chunks[i].clone(), i, size));
+                
+                // LOG
+                ConsoleLog.printBegin();
                 System.out.println(Messages.makeResponse(from, to, name, chunks[i].clone(), i, size));
+                ConsoleLog.printEnd();
+
                 dataOutputStream.flush();
                 ConsoleLog.printMessage(from, to, name, size, i, ConsoleLog.SENT);
                 Log.makeLog(from, to, name, size, i, ConsoleLog.SENT, !Log.END);

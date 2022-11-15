@@ -18,7 +18,7 @@ public class Hosts {
             }  
             scanLine.close(); 
         } catch(IOException e) {  
-            e.printStackTrace();  
+            //e.printStackTrace();  
         }  
     }
 

@@ -28,17 +28,15 @@ public class Fowarding extends Thread{
               dataInputStream2 = new DataInputStream(clientSocket.getInputStream());
               dataOutputStream2 = new DataOutputStream(clientSocket.getOutputStream());
               String[] params = decodeResponse2();
-              System.out.println("DDDDDDDDD");
-              for (String string : params) {
-                System.out.println("EEEEEEEEEEEEEEE");
+              /*for (String string : params) {
                 System.out.println(string);
-              }
+              }*/
               dataInputStream2.close();
               dataOutputStream2.close();
               clientSocket.close();
             }
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }  
     }  
 
@@ -60,13 +58,13 @@ public class Fowarding extends Thread{
 
         int pos = Integer.parseInt(responseDecoded[4]);
 
-        System.out.println(responseDecoded[0]);
-        System.out.println(responseDecoded[1]);
-        System.out.println(responseDecoded[2]);
-        System.out.println(responseDecoded[3]);
-        System.out.println(responseDecoded[4]);
-        System.out.println(responseDecoded[5]);
-        System.out.println("************ " + pos);
+        //System.out.println(responseDecoded[0]);
+        //System.out.println(responseDecoded[1]);
+        //System.out.println(responseDecoded[2]);
+        //System.out.println(responseDecoded[3]);
+        //System.out.println(responseDecoded[4]);
+        //System.out.println(responseDecoded[5]);
+        //System.out.println("************ " + pos);
         return responseDecoded;
     }
 
@@ -88,7 +86,7 @@ public class Fowarding extends Thread{
 
         int pos = Integer.parseInt(responseDecoded[4]);
 
-        System.out.println("************ " + pos + responseDecoded[3]);
+        //System.out.println("************ " + pos + responseDecoded[3]);
         return responseDecoded;
     }
 
@@ -104,7 +102,7 @@ public class Fowarding extends Thread{
             dataInputStream.close();
             dataOutputStream.close();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }*/
     }
 }

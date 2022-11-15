@@ -55,7 +55,7 @@ public class FowardingServer extends Thread {
                 //} catch (EOFException e) {
                   //  continue;
                 //}
-                System.out.println(request);
+                //System.out.println(request);
                 //System.out.println(myHost);
 
                 //// DECODIFICAR LA REQUEST
@@ -70,7 +70,7 @@ public class FowardingServer extends Thread {
         } catch (EOFException e) {
             
         } catch( Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         } 
         
         finally{ 
@@ -84,7 +84,7 @@ public class FowardingServer extends Thread {
                 } 
             } 
             catch (Exception e) { 
-                e.printStackTrace(); 
+                //e.printStackTrace(); 
             } 
         }
     }
@@ -103,7 +103,7 @@ public class FowardingServer extends Thread {
             }  
             scanLine.close(); 
         } catch(IOException e) {  
-            e.printStackTrace();  
+            //e.printStackTrace();  
         }
     }
 
@@ -117,7 +117,7 @@ public class FowardingServer extends Thread {
     }
 
     public static void doFileRequest (String request, HashMap<String, String> requestDecoded, String local) {
-        System.out.println("Es transferencia de archivos.");
+        //System.out.println("Es transferencia de archivos.");
         String prueba;
         String Size;
         Pattern verifi = Pattern.compile("[a-z][A-Z]*:[0-9]");
@@ -129,7 +129,7 @@ public class FowardingServer extends Thread {
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
             dataOutputStream.writeUTF(request);
-            System.out.println("Archivo entregado a: " + local);
+            //System.out.println("Archivo entregado a: " + local);
             
             Matcher m = verifi.matcher(requestDecoded.get("Size"));
             if(m.find()){
@@ -163,7 +163,7 @@ public class FowardingServer extends Thread {
         catch (EOFException e) {
             
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
      
         finally{
@@ -176,7 +176,7 @@ public class FowardingServer extends Thread {
                 }
             }
             catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
@@ -259,7 +259,7 @@ public class FowardingServer extends Thread {
             dataOutputStream.writeUTF(response);
             dataOutputStream.flush();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }*/
        
         //sender.send();
@@ -307,9 +307,10 @@ public class FowardingServer extends Thread {
     public static void main(String[] args) {
         ServerSocket server = null;
         //// INIT
+        ConsoleLog.printBegin();
         System.out.println("Fowarding");
         System.out.println("Escuchando en puerto: " + PORT_FORWARDING);
-        System.out.println(separator);
+        ConsoleLog.printEnd();
         //readTable();
             
         //// OBTENER MI DIRECCIÓN
@@ -322,7 +323,7 @@ public class FowardingServer extends Thread {
 
             while(true){
                 Socket client =  server.accept(); 
-                System.out.println("Cliente : " + client.getInetAddress().getHostAddress()); 
+                //System.out.println("Cliente : " + client.getInetAddress().getHostAddress()); 
                  
                 /*FowardingServer clientSock = new FowardingServer(); 
                 clientSock.myHost = myHost; 
@@ -336,16 +337,16 @@ public class FowardingServer extends Thread {
                 new Thread(clientSock).start();
             }
         }catch(Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             if (server != null) {
                 try {
-                    System.out.println("Murio");
+                    //System.out.println("Murio");
                     server.close();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         }
@@ -376,7 +377,7 @@ public class FowardingServer extends Thread {
             }
             //clientSocket.close();
         } catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }*/
         
     }

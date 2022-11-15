@@ -21,7 +21,7 @@ public class Information {
             }  
             scanLine.close(); 
         } catch(IOException e) {  
-            e.printStackTrace();  
+            //e.printStackTrace();  
         }  
     }
 

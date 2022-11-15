@@ -26,7 +26,7 @@ public class FowardingMultithread {
                 new Thread(clientSock).start();
             }
         }catch(Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }        
 
@@ -39,7 +39,7 @@ public class FowardingMultithread {
         }
 
         public void run(){
-                System.out.println("Hola");
+                //System.out.println("Hola");
 
                 try{
                     /*InetAddress ip = InetAddress.getByName(new URL("https://c874-190-148-53-185.ngrok.io/").getHost());
@@ -50,9 +50,9 @@ public class FowardingMultithread {
                     while(true){
                         dataInputStream = new DataInputStream(socketClient.getInputStream());
                         dataOutputStream = new DataOutputStream(socketClient.getOutputStream());
-                        System.out.println("antes de ..");
+                        //System.out.println("antes de ..");
                         //dataOutputStream.writeUTF("success");
-                        System.out.println(dataInputStream.readUTF());
+                        //System.out.println(dataInputStream.readUTF());
                         String destino = dataInputStream.readUTF();
                             
                         /*while ((line = br.readLine()) != null) {
@@ -69,7 +69,7 @@ public class FowardingMultithread {
                           }*/
                     }
                 }catch(Exception e){
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
                     finally{
                         try {
@@ -82,7 +82,7 @@ public class FowardingMultithread {
                             }
                         }
                         catch (Exception e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
                         }
                     }
         }

@@ -3,10 +3,15 @@ public class ConsoleLog {
     public static final boolean RECEIVED = true;
     public static final boolean SENT = false;
 
-    public static void printRoutingMessage (String from) {
+    public static final String HELLO = "Hello";
+    public static final String KEEPALIVE = "Keep Alive";
+    public static final String WELCOME = "Welcome";
+    public static final String DISTANCEVECTOR = "Distance Vector";
+
+    public static void printRoutingMessage (String from, String message, boolean action) {
         printBegin();
-        System.out.println(Time.now() + "\tDe: " + from);
-        System.out.println("Mensaje \"Hello\" recibido.");
+        System.out.println(Time.now() + "\t"+((action) ? "De" : "Para")+": " + from);
+        System.out.println("Mensaje \""+message+"\" "+ ((action) ? "recibido" : "enviado") + ".");
         printEnd();
     }
 

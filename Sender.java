@@ -28,7 +28,7 @@ public class Sender {
             dataInputStream.close();
             dataOutputStream.close();
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 }
